@@ -104,7 +104,17 @@ def generate_pdf(voucher_id: int, db: Session = Depends(get_db), _=Depends(get_c
 
 
 @router.get("/{voucher_id}/pdf")
-def download_pdf(voucher_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def download_pdf(voucher_id: int, token: Optional[str] = None, db: Session = Depends(get_db)):
+    from jose import JWTError, jwt
+    from config import settings as cfg
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, cfg.secret_key, algorithms=[cfg.algorithm])
+        if not payload.get("sub"):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     v = crud.get_voucher(db, voucher_id)
     if not v:
         raise HTTPException(404, "Voucher not found")
