@@ -9,8 +9,9 @@ export default function AppShell({ children, roles }: { children: React.ReactNod
   useEffect(() => {
     const user = getStoredUser();
     if (!user) { router.replace("/login"); return; }
-    if (roles && !roles.includes(user.role)) { router.replace("/"); }
-  }, [router, roles]);
+    if (roles && !roles.includes(user.role)) { router.replace("/login"); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex h-screen">
