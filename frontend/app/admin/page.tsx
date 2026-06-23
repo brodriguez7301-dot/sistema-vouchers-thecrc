@@ -37,7 +37,7 @@ export default function AdminDashboard() {
       ) : (
         <div className="text-gray-400">Cargando métricas…</div>
       )}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
           { href: "/admin/providers", label: "Gestionar Proveedores", icon: "🏢" },
           { href: "/admin/services", label: "Gestionar Servicios", icon: "🎯" },

@@ -51,7 +51,7 @@ export default function AuditPage() {
     <AppShell roles={["admin", "auditor"]}>
       <h1 className="text-2xl font-bold mb-6">Módulo de Auditoría</h1>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         <div className="card text-center"><div className="text-2xl font-bold text-yellow-600">{kpis.pending}</div><div className="text-sm text-gray-500">Pendientes</div></div>
         <div className="card text-center"><div className="text-2xl font-bold text-green-600">{kpis.validated}</div><div className="text-sm text-gray-500">Aprobados</div></div>
         <div className="card text-center"><div className="text-2xl font-bold text-red-600">{kpis.rejected}</div><div className="text-sm text-gray-500">Rechazados</div></div>
@@ -65,6 +65,7 @@ export default function AuditPage() {
       {tab === "pending" && (
         <>
           <div className="card p-0 overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
@@ -94,11 +95,12 @@ export default function AuditPage() {
                 {pending.length === 0 && <tr><td colSpan={7} className="table-td text-center text-gray-400 py-8">Sin facturas pendientes ✓</td></tr>}
               </tbody>
             </table>
+            </div>
           </div>
 
           {selected && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+              <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md max-h-screen overflow-y-auto">
                 <h2 className="text-lg font-bold mb-2">Validar Factura</h2>
                 <div className="bg-gray-50 rounded-lg p-4 text-sm mb-5 space-y-1">
                   <div><span className="font-medium">Voucher:</span> <span className="text-[#FF0000] font-bold">{selected.voucher?.consecutive_number}</span></div>
@@ -138,6 +140,7 @@ export default function AuditPage() {
 
       {tab === "report" && (
         <div className="card p-0 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -161,6 +164,7 @@ export default function AuditPage() {
               {report.length === 0 && <tr><td colSpan={5} className="table-td text-center text-gray-400 py-8">Sin registros de auditoría</td></tr>}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </AppShell>

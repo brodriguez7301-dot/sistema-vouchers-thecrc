@@ -138,6 +138,7 @@ export default function FrontDeskPage() {
           <button onClick={loadToday} className="text-sm text-[#0066CC] hover:underline">Cargar</button>
         </div>
         {loadedToday ? (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -161,6 +162,7 @@ export default function FrontDeskPage() {
               {todayUsages.length === 0 && <tr><td colSpan={5} className="table-td text-center text-gray-400 py-6">Sin usos hoy</td></tr>}
             </tbody>
           </table>
+          </div>
         ) : (
           <p className="text-gray-400 text-sm">Haz clic en "Cargar" para ver los usos de hoy.</p>
         )}

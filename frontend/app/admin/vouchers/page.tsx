@@ -85,7 +85,7 @@ export default function VouchersPage() {
 
   return (
     <AppShell roles={["admin"]}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
         <h1 className="text-2xl font-bold">Vouchers</h1>
         <div className="flex gap-3">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
@@ -153,6 +153,7 @@ export default function VouchersPage() {
       )}
 
       <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -194,6 +195,7 @@ export default function VouchersPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </AppShell>
   );

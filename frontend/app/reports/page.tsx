@@ -84,6 +84,7 @@ export default function ReportsPage() {
               <Bar dataKey="total" fill="#0066CC" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm mt-4">
             <thead className="bg-gray-50 border-b">
               <tr><th className="table-th">Proveedor</th><th className="table-th">Total Validado</th><th className="table-th">Facturas</th></tr>
@@ -99,6 +100,7 @@ export default function ReportsPage() {
               {ingresos.length === 0 && <tr><td colSpan={3} className="table-td text-center text-gray-400 py-6">Sin datos</td></tr>}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -114,6 +116,7 @@ export default function ReportsPage() {
               <Bar dataKey="total" fill="#002147" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm mt-4">
             <thead className="bg-gray-50 border-b">
               <tr><th className="table-th">Propiedad</th><th className="table-th">Total</th><th className="table-th">Facturas</th></tr>
@@ -125,12 +128,14 @@ export default function ReportsPage() {
               {propiedad.length === 0 && <tr><td colSpan={3} className="table-td text-center text-gray-400 py-6">Sin datos</td></tr>}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {tab === "anomalias" && (
         <div className="card">
           <h2 className="font-semibold text-gray-700 mb-4">Anomalías — Montos con diferencia &gt;5%</h2>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -154,6 +159,7 @@ export default function ReportsPage() {
               {anomalias.length === 0 && <tr><td colSpan={5} className="table-td text-center text-gray-400 py-6">Sin anomalías detectadas ✓</td></tr>}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

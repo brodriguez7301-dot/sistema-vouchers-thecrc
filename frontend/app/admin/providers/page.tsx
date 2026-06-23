@@ -39,14 +39,14 @@ export default function ProvidersPage() {
 
   return (
     <AppShell roles={["admin"]}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
         <h1 className="text-2xl font-bold">Proveedores</h1>
         <button className="btn-primary" onClick={() => setShowForm(true)}>+ Nuevo Proveedor</button>
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md max-h-screen overflow-y-auto">
             <h2 className="text-lg font-bold mb-5">Nuevo Proveedor</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <input required placeholder="Nombre del proveedor" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm" />
@@ -67,6 +67,7 @@ export default function ProvidersPage() {
       )}
 
       <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -102,6 +103,7 @@ export default function ProvidersPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </AppShell>
   );

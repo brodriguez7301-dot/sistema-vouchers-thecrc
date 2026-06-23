@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { getStoredUser, logout } from "@/lib/auth";
 import clsx from "clsx";
 
@@ -21,24 +21,25 @@ const NAV: Record<string, { label: string; href: string }[]> = {
   ],
 };
 
-export default function Navbar() {
+export default function Navbar({ onNavigate }: { onNavigate?: () => void }) {
   const user = getStoredUser();
   const pathname = usePathname();
   const items = user ? (NAV[user.role] ?? []) : [];
 
   return (
-    <nav className="bg-[#002147] text-white h-full flex flex-col">
+    <nav className="bg-[#002147] text-white h-full flex flex-col w-full">
       <div className="px-5 py-5 border-b border-white/10">
         <div className="text-xs font-bold uppercase tracking-widest text-blue-300">The Costa Rica Collection</div>
         <div className="text-white font-semibold text-sm mt-0.5">Vouchers</div>
       </div>
-      <div className="flex-1 py-4 space-y-1 px-2">
+      <div className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             className={clsx(
-              "block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
+              "block px-4 py-3 rounded-lg text-sm font-medium transition-colors",
               pathname === item.href
                 ? "bg-[#0066CC] text-white"
                 : "text-blue-100 hover:bg-white/10"
