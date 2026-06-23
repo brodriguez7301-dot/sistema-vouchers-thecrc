@@ -57,19 +57,20 @@ async def create_voucher(
     unit_price: float = Form(...),
     quantity: int = Form(1),
     notes: Optional[str] = Form(None),
-    photo: UploadFile = File(...),
+    photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     user=Depends(require_role("admin")),
 ):
-    if photo.size and photo.size > settings.max_file_size:
-        raise HTTPException(400, "Photo file too large")
-
-    ext = Path(photo.filename).suffix if photo.filename else ".jpg"
-    filename = f"{uuid.uuid4()}{ext}"
-    save_path = Path(settings.upload_dir) / filename
-
-    with save_path.open("wb") as f:
-        shutil.copyfileobj(photo.file, f)
+    photo_path = None
+    if photo and photo.filename:
+        if photo.size and photo.size > settings.max_file_size:
+            raise HTTPException(400, "Photo file too large")
+        ext = Path(photo.filename).suffix or ".jpg"
+        filename = f"{uuid.uuid4()}{ext}"
+        save_path = Path(settings.upload_dir) / filename
+        with save_path.open("wb") as f:
+            shutil.copyfileobj(photo.file, f)
+        photo_path = str(save_path)
 
     from decimal import Decimal
     data = schemas.VoucherCreate(
@@ -82,7 +83,7 @@ async def create_voucher(
         quantity=quantity,
         notes=notes,
     )
-    voucher = crud.create_voucher(db, data, photo_path=str(save_path), assigned_by=user.name)
+    voucher = crud.create_voucher(db, data, photo_path=photo_path, assigned_by=user.name)
     return voucher
 
 
