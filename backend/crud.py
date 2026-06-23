@@ -164,7 +164,7 @@ def get_voucher_by_consecutive(db: Session, consecutive: str) -> Optional[Vouche
 def create_voucher(
     db: Session,
     data: schemas.VoucherCreate,
-    photo_path: str,
+    photo_path: Optional[str],
     assigned_by: str,
 ) -> Voucher:
     consecutive = generate_consecutive_number(db)

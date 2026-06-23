@@ -109,14 +109,17 @@ def generate_voucher_pdf(voucher_data: dict, photo_path: str | None = None) -> b
     line_h = 7 * mm
     info_y = box_y - 8 * mm
 
+    service_date_str = ""
+    if voucher_data.get("service_date"):
+        service_date_str = str(voucher_data["service_date"])[:10]
     fields = [
         ("Room", voucher_data.get("room_number", "")),
         ("Guest", voucher_data.get("guest_name", "")),
         ("Service", voucher_data.get("service_name", "")),
         ("Provider", voucher_data.get("provider_name", "")),
         ("Price", f"USD ${float(voucher_data.get('unit_price', 0)):,.2f}"),
+        ("Service Date", service_date_str or "—"),
         ("Property", voucher_data.get("property_name", "")),
-        ("Valid until", voucher_data.get("valid_until", str(voucher_data.get("assigned_date", ""))[:10])),
     ]
 
     for label, value in fields:

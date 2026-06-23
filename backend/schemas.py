@@ -110,6 +110,7 @@ class VoucherCreate(BaseModel):
     unit_price: Decimal
     quantity: int = 1
     notes: Optional[str] = None
+    service_date: Optional[date] = None
 
 
 class VoucherStatusUpdate(BaseModel):
@@ -126,6 +127,7 @@ class VoucherOut(BaseModel):
     guest_photo_url: str
     qr_code_data: Optional[str]
     assigned_date: datetime
+    service_date: Optional[date] = None
     assigned_by: str
     status: VoucherStatus
     property_name: str

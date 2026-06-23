@@ -44,6 +44,7 @@ export interface Voucher {
   guest_photo_url: string;
   qr_code_data?: string;
   assigned_date: string;
+  service_date?: string;
   assigned_by: string;
   status: VoucherStatus;
   property_name: string;

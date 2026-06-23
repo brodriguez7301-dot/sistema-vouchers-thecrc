@@ -9,6 +9,16 @@ from api import auth, providers, services, vouchers, voucher_usage, audit, repor
 
 Base.metadata.create_all(bind=engine)
 
+# Add columns introduced after initial deploy
+with engine.connect() as conn:
+    try:
+        conn.execute(__import__("sqlalchemy").text(
+            "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS service_date DATE"
+        ))
+        conn.commit()
+    except Exception:
+        pass
+
 app = FastAPI(title="Sistema de Vouchers Electrónicos", version="1.0.0")
 
 app.add_middleware(

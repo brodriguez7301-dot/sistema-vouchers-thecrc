@@ -57,6 +57,7 @@ async def create_voucher(
     unit_price: float = Form(...),
     quantity: int = Form(1),
     notes: Optional[str] = Form(None),
+    service_date: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     user=Depends(require_role("admin")),
@@ -73,6 +74,13 @@ async def create_voucher(
         photo_path = str(save_path)
 
     from decimal import Decimal
+    from datetime import date as date_type
+    parsed_date = None
+    if service_date:
+        try:
+            parsed_date = date_type.fromisoformat(service_date)
+        except ValueError:
+            pass
     data = schemas.VoucherCreate(
         provider_id=provider_id,
         service_id=service_id,
@@ -82,6 +90,7 @@ async def create_voucher(
         unit_price=Decimal(str(unit_price)),
         quantity=quantity,
         notes=notes,
+        service_date=parsed_date,
     )
     voucher = crud.create_voucher(db, data, photo_path=photo_path, assigned_by=user.name)
     return voucher

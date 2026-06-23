@@ -22,7 +22,7 @@ export default function VouchersPage() {
 
   const [form, setForm] = useState({
     provider_id: "", service_id: "", room_number: "", guest_name: "",
-    property_name: PROPERTIES[0], unit_price: "", quantity: "1", notes: "",
+    property_name: PROPERTIES[0], unit_price: "", quantity: "1", notes: "", service_date: "",
   });
 
   const load = () => {
@@ -128,8 +128,12 @@ export default function VouchersPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[#0066CC] uppercase mb-1 block">Paso 4 — Foto y Precio</label>
+                <label className="text-xs font-semibold text-[#0066CC] uppercase mb-1 block">Paso 4 — Fecha, Foto y Precio</label>
                 <div className="space-y-2">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Fecha del servicio *</label>
+                    <input required type="date" value={form.service_date} onChange={e => setForm(f => ({ ...f, service_date: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  </div>
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Foto del huésped (opcional)</label>
                     <input ref={photoRef} type="file" accept="image/*" className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700" />

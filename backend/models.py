@@ -100,6 +100,7 @@ class Voucher(Base):
     guest_photo_url = Column(String(255), nullable=False)
     qr_code_data = Column(String(500))
     assigned_date = Column(DateTime, server_default=func.now())
+    service_date = Column(Date, nullable=True)
     assigned_by = Column(String(100), nullable=False)
     status = Column(SAEnum(VoucherStatus), default=VoucherStatus.PENDING, nullable=False)
     property_name = Column(String(100), nullable=False)
