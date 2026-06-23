@@ -46,12 +46,11 @@ export default function VouchersPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     const file = photoRef.current?.files?.[0];
-    if (!file) { setError("La foto del huésped es requerida"); return; }
     setSaving(true);
     setError("");
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    fd.append("photo", file);
+    if (file) fd.append("photo", file);
     try {
       await api.createVoucher(fd);
       setShowForm(false);
@@ -132,8 +131,8 @@ export default function VouchersPage() {
                 <label className="text-xs font-semibold text-[#0066CC] uppercase mb-1 block">Paso 4 — Foto y Precio</label>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Foto del huésped *</label>
-                    <input ref={photoRef} type="file" accept="image/*" required className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700" />
+                    <label className="text-xs text-gray-500 mb-1 block">Foto del huésped (opcional)</label>
+                    <input ref={photoRef} type="file" accept="image/*" className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700" />
                   </div>
                   <div className="flex gap-2">
                     <input required type="number" step="0.01" placeholder="Precio (USD)" value={form.unit_price} onChange={e => setForm(f => ({ ...f, unit_price: e.target.value }))} className="flex-1 border rounded-lg px-3 py-2 text-sm" />
