@@ -35,7 +35,7 @@ export default function ServicesPage() {
     }
   }
 
-  const fmt = (n: number, cur: string) => `${cur} $${n.toFixed(2)}`;
+  const fmt = (n: number | string, cur: string) => `${cur} $${Number(n).toFixed(2)}`;
 
   return (
     <AppShell roles={["admin"]}>
