@@ -46,7 +46,7 @@ export default function ReportsPage() {
     setTraceResult(null);
     try {
       const r = await api.getTrazabilidad(Number(traceId));
-      setTraceResult(r);
+      setTraceResult(r as TraceResult);
     } catch (err: unknown) {
       setTraceError(err instanceof Error ? err.message : "No encontrado");
     }
