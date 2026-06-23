@@ -1,0 +1,425 @@
+# 🚀 PROMPT PARA CLAUDE CODE
+## Sistema de Vouchers Electrónicos - VERSIÓN SIMPLIFICADA (SIN EMAIL)
+
+Copia y pega TODO esto en Claude Code:
+
+```
+🎯 TAREA: Sistema de Vouchers Electrónicos con PDF y Foto
+
+STACK REQUERIDO:
+- Backend: FastAPI (Python) + PostgreSQL
+- Frontend: Next.js 14 (React + TypeScript)
+- PDF: ReportLab (Python)
+- QR: qrcode (Python)
+- Auth: JWT con roles (Admin, FrontDesk, Auditor)
+
+=====================================
+BASE DE DATOS (6 Tablas PostgreSQL)
+=====================================
+
+1. Providers
+   - provider_id (PK)
+   - name, type (TOUR/TRANSPORT/OTHER)
+   - contact_email, contact_phone
+   - bank_account, is_active
+   - created_date, updated_date
+
+2. Services
+   - service_id (PK)
+   - provider_id (FK)
+   - service_name, service_type (TOUR/TRANSPORT/ACTIVITY)
+   - description, base_price, currency (USD/CRC)
+   - is_active, created_date
+
+3. Vouchers ⭐ TABLA PRINCIPAL
+   - voucher_id (PK)
+   - consecutive_number (UNIQUE) → Ej: VCH-2026-001001
+   - provider_id, service_id (FK)
+   - room_number, guest_name
+   - guest_photo_url (REQUIRED - foto subida)
+   - qr_code_data (GENERATED)
+   - assigned_date, assigned_by
+   - status (ENUM): PENDING, ISSUED, INVOICED, PAID, CANCELLED
+   - property_name (Corcovado, Ojochal, etc)
+   - unit_price, quantity, total_amount (GENERATED)
+   - pdf_generated, pdf_url
+   - notes, created_date, updated_date
+
+4. VoucherUsage
+   - usage_id (PK)
+   - voucher_id (FK)
+   - invoice_number, front_desk_user
+   - usage_date, guest_name, guest_room
+   - invoice_amount, status (PENDING/VALIDATED/REJECTED)
+   - created_date
+
+5. AuditLog
+   - audit_id (PK)
+   - voucher_usage_id (FK)
+   - auditor_name, validation_status
+   - findings, audit_date, evidence_notes
+
+6. PricingHistory
+   - price_history_id (PK)
+   - service_id (FK)
+   - old_price, new_price, effective_date
+   - changed_by, change_reason, created_date
+
+=====================================
+ENDPOINTS API (FastAPI)
+=====================================
+
+PROVEEDORES:
+✓ POST /api/providers → Crear
+✓ GET /api/providers → Listar
+✓ GET /api/providers/{id} → Detalle
+✓ PUT /api/providers/{id} → Actualizar
+✓ DELETE /api/providers/{id} → Eliminar
+
+SERVICIOS:
+✓ POST /api/services → Crear
+✓ GET /api/services → Listar
+✓ GET /api/services/{id} → Detalle
+✓ PUT /api/services/{id} → Actualizar
+✓ DELETE /api/services/{id} → Eliminar
+
+VOUCHERS (PRINCIPAL):
+✓ POST /api/vouchers → CREAR NUEVO
+   Entrada: provider_id, service_id, room_number, guest_name, guest_photo (file), unit_price
+   - Auto genera consecutive_number
+   - Guarda foto
+   - Status = PENDING
+   
+✓ GET /api/vouchers → Listar (filtros: status, property, date)
+✓ GET /api/vouchers/{id} → Detalle
+✓ GET /api/vouchers/{consecutive_number} → Buscar por número
+✓ PUT /api/vouchers/{id}/status → Cambiar estado
+
+GENERACIÓN PDF:
+✓ POST /api/vouchers/{id}/generate-pdf → Generar PDF
+   - Incluye: Foto, QR, todos los datos
+   - Tamaño A5 Horizontal (210mm x 148mm)
+   - 300 DPI
+   - Guarda: pdf_url, pdf_generated = TRUE
+
+✓ GET /api/vouchers/{id}/pdf → Descargar PDF
+   - Content-Type: application/pdf
+
+VOUCHER USAGE (Front Desk):
+✓ POST /api/voucher-usage → Registrar uso en factura
+   Validaciones:
+   - Voucher existe
+   - Status = ISSUED
+   - Monto ≈ unit_price (±5%)
+   - No usado 2 veces
+   
+✓ GET /api/voucher-usage → Listar pendientes
+✓ GET /api/voucher-usage/today → Hoy
+
+AUDITORÍA:
+✓ GET /api/audit/pending → Facturas pendientes validar
+✓ POST /api/audit/{usage_id}/validate
+   Entrada: validation_status (APPROVED/REJECTED), findings
+   
+✓ GET /api/audit/report → Reporte
+
+REPORTES:
+✓ GET /api/reports/ingresos-validados
+✓ GET /api/reports/por-proveedor
+✓ GET /api/reports/por-propiedad
+✓ GET /api/reports/anomalias
+✓ GET /api/reports/trazabilidad/{voucher_id}
+
+=====================================
+FRONTEND (Next.js 14 - 4 Módulos)
+=====================================
+
+MÓDULO 1: ADMINISTRACIÓN
+- Dashboard: KPIs (total vouchers, ingresos, proveedores)
+- ABM Proveedores (CRUD)
+- ABM Servicios (CRUD)
+- Generación de Vouchers:
+  * Paso 1: Seleccionar Proveedor
+  * Paso 2: Seleccionar Servicio
+  * Paso 3: Habitación + Nombre Huésped
+  * Paso 4: Upload Foto + Confirmar Precio
+  * Preview del voucher (con foto)
+  * Botón "Generar PDF"
+  * Descargar PDF
+- Consulta de Vouchers (búsqueda, filtros, ver, descargar)
+
+MÓDULO 2: FRONT DESK
+- Búsqueda de Voucher por consecutivo
+- Mostrar datos completos
+- Registro de uso (factura):
+  * Número de voucher
+  * Número de factura
+  * Monto (validación automática)
+- Listado de usos del día
+
+MÓDULO 3: AUDITORÍA
+- Dashboard: KPIs pendientes/aprobados/rechazados
+- Tabla de facturas pendientes validar
+- Formulario de validación:
+  * Ver voucher + datos uso
+  * Validar: Aprobado / Rechazado / Requiere Clarificación
+  * Campo: Hallazgos
+- Reporte (tabla + Excel/PDF)
+
+MÓDULO 4: REPORTES
+- Reporte de Ingresos (gráfico + tabla)
+- Reporte por Proveedor
+- Reporte por Propiedad
+- Anomalías (montos inconsistentes)
+- Trazabilidad completa (buscar por consecutivo)
+
+=====================================
+ESPECIFICACIONES DEL VOUCHER PDF
+=====================================
+
+Formato: A5 Horizontal (210mm x 148mm)
+Resolución: 300 DPI
+Tamaño de impresión: Media carta
+
+Layout:
+┌─────────────────────────────────────┐
+│ [LOGO] THE COSTA RICA COLLECTION    │
+│        SERVICE VOUCHER              │
+│                                     │
+│   ┌──────────────────────────────┐  │
+│   │   VCH-2026-001001            │  │
+│   │  (ROJO 48PT, BOLD, DESTACADO) │  │
+│   └──────────────────────────────┘  │
+│                                     │
+│ [FOTO 4x5cm]  Habitación: 307       │
+│ [QR 2x2cm]    Huésped: Juan García  │
+│               Servicio: Tour...     │
+│               Precio: USD $89.00    │
+│               Proveedor: Eco Tours  │
+│               Propiedad: Corcovado  │
+│               Válido: 30 Jun 2026   │
+│                                     │
+└─────────────────────────────────────┘
+
+Colores:
+- Número voucher: ROJO #FF0000
+- Headers: Azul #0066CC
+- Texto: Gris #333333
+- Fondo: Blanco #FFFFFF
+
+Tipografía: Montserrat (Google Fonts)
+- Número: Bold 48pt Rojo
+- Labels: Semi-Bold 10pt Azul
+- Valores: Regular 9pt Gris
+
+QR contiene JSON:
+{
+  "voucher_id": 1001,
+  "consecutive": "VCH-2026-001001",
+  "room": "307",
+  "guest": "Juan García López",
+  "service": "Tour Corcovado",
+  "price": 89.00,
+  "date": "2026-06-23"
+}
+
+=====================================
+VARIABLES DE ENTORNO (.env)
+=====================================
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/vouchers_db
+
+# JWT
+SECRET_KEY=your-super-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+# Server
+API_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000
+
+# Files
+UPLOAD_DIR=/uploads/voucher-photos
+PDF_DIR=/uploads/vouchers-pdf
+MAX_FILE_SIZE=5242880
+
+=====================================
+LIBRERÍAS NECESARIAS (Backend)
+=====================================
+
+Python:
+✓ fastapi
+✓ sqlalchemy
+✓ psycopg2-binary (PostgreSQL)
+✓ python-multipart (file uploads)
+✓ python-jose (JWT)
+✓ passlib (passwords)
+✓ pydantic
+✓ reportlab (PDF generation)
+✓ pillow (image processing)
+✓ qrcode
+
+=====================================
+VALIDACIONES / REGLAS DE NEGOCIO
+=====================================
+
+RN-001: consecutive_number UNIQUE (no repetir)
+RN-002: Solo usar voucher si status=ISSUED
+RN-003: Monto facturado ≈ unit_price (±5%)
+RN-004: Solo auditores pueden validar
+RN-005: No eliminar; solo cancelar si PENDING
+RN-006: Cambios precio → tabla PricingHistory
+RN-007: Voucher se factura UNA VEZ
+RN-008: Auditores dejan evidencia (campo obligatorio)
+
+=====================================
+FLUJO DE DATOS (Resumido)
+=====================================
+
+1️⃣ CREAR VOUCHER
+   Admin → Rellena form (proveedor, servicio, habitación, huésped, foto, precio)
+   → Sistema genera: consecutive, QR
+   → Genera PDF (con foto embebida)
+   → Descarga PDF
+
+2️⃣ USAR VOUCHER (Front Desk)
+   Huésped facturado → Front Desk busca voucher por número
+   → Registra: invoice_number, amount
+   → Sistema valida monto (±5%)
+
+3️⃣ VALIDAR (Auditor)
+   Auditor ve lista de facturas
+   → Compara datos vs voucher
+   → Aprueba o rechaza
+   → Guarda hallazgos
+
+4️⃣ REPORTES
+   Genera: ingresos validados, por proveedor, anomalías, etc.
+
+=====================================
+CHECKLIST TÉCNICO
+=====================================
+
+Backend:
+✓ FastAPI setup + PostgreSQL
+✓ SQLAlchemy models (6 tablas)
+✓ CRUD endpoints (20+)
+✓ JWT authentication con roles
+✓ PDF generator (ReportLab) con foto
+✓ QR generator
+✓ File upload (fotos)
+✓ Validaciones (monto ±5%, vouchers únicos, etc)
+✓ Error handling
+
+Frontend:
+✓ Next.js setup
+✓ Autenticación (JWT)
+✓ 4 módulos/rutas
+✓ Formularios dinámicos
+✓ Upload de fotos
+✓ Preview de PDF
+✓ Descarga de PDF
+✓ Tablas con filtros/búsqueda
+✓ Gráficos en reportes
+
+Testing:
+✓ Crear proveedor + servicios de prueba
+✓ Generar 5 vouchers con fotos
+✓ Verificar PDF se genera con foto
+✓ Verificar QR es legible
+✓ Usar voucher en Front Desk
+✓ Validar como auditor
+✓ Generar reportes
+
+=====================================
+ESTRUCTURA DE CARPETAS (Recomendada)
+=====================================
+
+backend/
+├── main.py
+├── database.py
+├── models.py
+├── schemas.py
+├── crud.py
+├── api/
+│   ├── providers.py
+│   ├── services.py
+│   ├── vouchers.py
+│   ├── voucher_usage.py
+│   ├── audit.py
+│   └── reports.py
+├── utils/
+│   ├── pdf_generator.py (ReportLab)
+│   ├── qr_generator.py
+│   └── helpers.py
+├── config.py
+└── requirements.txt
+
+frontend/
+├── app/
+│   ├── admin/
+│   │   ├── page.tsx
+│   │   ├── providers/
+│   │   ├── services/
+│   │   └── vouchers/
+│   ├── front-desk/
+│   │   ├── page.tsx
+│   │   └── components/
+│   ├── audit/
+│   │   ├── page.tsx
+│   │   └── components/
+│   └── reports/
+│       └── page.tsx
+├── components/
+│   ├── VoucherForm.tsx
+│   ├── VoucherPreview.tsx
+│   ├── VoucherTable.tsx
+│   └── AuditForm.tsx
+├── hooks/
+│   ├── useAuth.ts
+│   ├── useVouchers.ts
+│   └── usePdf.ts
+└── lib/
+    ├── api.ts
+    ├── auth.ts
+    └── storage.ts
+
+=====================================
+MILESTONES (Aproximado)
+=====================================
+
+1. Setup Backend + PostgreSQL (1 hora)
+2. Modelos BD y relaciones (30 min)
+3. Endpoints CRUD básicos (1.5 horas)
+4. Generación PDF + QR + Foto (1.5 horas)
+5. Setup Frontend + Autenticación (45 min)
+6. Módulo Admin - Crear vouchers (1 hora)
+7. Módulo Front Desk (45 min)
+8. Módulo Auditoría (1 hora)
+9. Módulo Reportes (1 hora)
+10. Testing + Bugfixes (1 hora)
+
+TIEMPO TOTAL: ~11 horas
+
+¡COMIENZA POR FAVOR!
+```
+
+---
+
+**Eso es TODO lo que necesitas copiar y pegar en Claude Code.**
+
+El sistema NO incluye:
+- ❌ Envío de correos
+- ❌ Configuración SMTP
+- ❌ Email fields
+
+Solo incluye:
+- ✅ Foto del huésped en el voucher
+- ✅ PDF profesional con foto embebida
+- ✅ QR code escaneable
+- ✅ Número de voucher en rojo grande
+- ✅ Descarga del PDF
+- ✅ Validación en auditoría
+
+**¡Listo para empezar!** 🚀
