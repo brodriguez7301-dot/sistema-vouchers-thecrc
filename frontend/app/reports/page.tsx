@@ -6,13 +6,32 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 type Tab = "ingresos" | "proveedor" | "propiedad" | "anomalias" | "trazabilidad";
 
+type TraceResult = {
+  voucher: {
+    consecutive_number: string;
+    guest_name: string;
+    room_number: string;
+    status: string;
+    unit_price: number;
+    property_name: string;
+  };
+  usages: {
+    usage_id: number;
+    invoice_number: string;
+    invoice_amount: number;
+    status: string;
+    usage_date: string;
+    audits: { validation_status: string; auditor_name: string; findings: string }[];
+  }[];
+};
+
 export default function ReportsPage() {
   const [tab, setTab] = useState<Tab>("ingresos");
   const [ingresos, setIngresos] = useState<{ provider: string; total: number; count: number }[]>([]);
   const [propiedad, setPropiedad] = useState<{ property: string; total: number; count: number }[]>([]);
   const [anomalias, setAnomalias] = useState<unknown[]>([]);
   const [traceId, setTraceId] = useState("");
-  const [traceResult, setTraceResult] = useState<unknown>(null);
+  const [traceResult, setTraceResult] = useState<TraceResult | null>(null);
   const [traceError, setTraceError] = useState("");
 
   useEffect(() => {
@@ -146,22 +165,20 @@ export default function ReportsPage() {
             <button type="submit" className="btn-primary">Buscar</button>
           </form>
           {traceError && <p className="text-red-600 text-sm mb-4">{traceError}</p>}
-          {traceResult && (() => {
-            const r = traceResult as { voucher: { consecutive_number: string; guest_name: string; room_number: string; status: string; unit_price: number; property_name: string }; usages: { usage_id: number; invoice_number: string; invoice_amount: number; status: string; usage_date: string; audits: { validation_status: string; auditor_name: string; findings: string }[] }[] };
-            return (
+          {traceResult && (
               <div className="space-y-4">
                 <div className="bg-blue-50 rounded-xl p-4">
-                  <div className="font-bold text-[#FF0000] text-lg mb-2">{r.voucher.consecutive_number}</div>
+                  <div className="font-bold text-[#FF0000] text-lg mb-2">{traceResult.voucher.consecutive_number}</div>
                   <div className="text-sm grid grid-cols-2 gap-1">
-                    <span className="font-medium">Huésped:</span><span>{r.voucher.guest_name}</span>
-                    <span className="font-medium">Habitación:</span><span>{r.voucher.room_number}</span>
-                    <span className="font-medium">Precio:</span><span>{fmt(r.voucher.unit_price)}</span>
-                    <span className="font-medium">Estado:</span><span>{r.voucher.status}</span>
-                    <span className="font-medium">Propiedad:</span><span>{r.voucher.property_name}</span>
+                    <span className="font-medium">Huésped:</span><span>{traceResult.voucher.guest_name}</span>
+                    <span className="font-medium">Habitación:</span><span>{traceResult.voucher.room_number}</span>
+                    <span className="font-medium">Precio:</span><span>{fmt(traceResult.voucher.unit_price)}</span>
+                    <span className="font-medium">Estado:</span><span>{traceResult.voucher.status}</span>
+                    <span className="font-medium">Propiedad:</span><span>{traceResult.voucher.property_name}</span>
                   </div>
                 </div>
                 <h3 className="font-semibold text-gray-700">Historial de uso</h3>
-                {r.usages.map(u => (
+                {traceResult.usages.map(u => (
                   <div key={u.usage_id} className="border rounded-xl p-4 text-sm">
                     <div className="flex justify-between mb-2">
                       <span className="font-medium">Factura {u.invoice_number}</span>
@@ -175,10 +192,9 @@ export default function ReportsPage() {
                     ))}
                   </div>
                 ))}
-                {r.usages.length === 0 && <p className="text-gray-400 text-sm">Sin usos registrados</p>}
+                {traceResult.usages.length === 0 && <p className="text-gray-400 text-sm">Sin usos registrados</p>}
               </div>
-            );
-          })()}
+          )}
         </div>
       )}
     </AppShell>
