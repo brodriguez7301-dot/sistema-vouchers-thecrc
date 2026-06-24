@@ -51,14 +51,14 @@ export default function Navbar({ onNavigate }: { onNavigate?: () => void }) {
           <div className="text-white font-semibold text-sm mt-0.5">Vouchers</div>
         </div>
       </div>
-      <div className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
+      <div className="flex-1 py-2 space-y-0.5 px-2 overflow-y-auto">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
             className={clsx(
-              "block px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+              "block px-3 py-2 rounded-lg text-sm font-medium transition-colors",
               pathname === item.href
                 ? "bg-[#0066CC] text-white"
                 : "text-blue-100 hover:bg-white/10"
