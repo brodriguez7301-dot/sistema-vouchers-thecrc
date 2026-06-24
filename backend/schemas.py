@@ -143,7 +143,7 @@ class VoucherStatusUpdate(BaseModel):
 class VoucherOut(BaseModel):
     voucher_id: int
     consecutive_number: str
-    provider_id: int
+    provider_id: Optional[int] = None
     service_id: int
     room_number: str
     guest_name: str
