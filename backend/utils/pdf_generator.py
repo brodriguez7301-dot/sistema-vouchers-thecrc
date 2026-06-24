@@ -85,15 +85,8 @@ def generate_voucher_pdf(voucher_data: dict, photo_path: str | None = None) -> b
     qr_size = 22 * mm
     qr_y = photo_y - qr_size - 4 * mm
     try:
-        qr_data = {
-            "voucher_id": voucher_data.get("voucher_id"),
-            "consecutive": voucher_data.get("consecutive_number"),
-            "room": voucher_data.get("room_number"),
-            "guest": voucher_data.get("guest_name"),
-            "service": voucher_data.get("service_name", ""),
-            "price": float(voucher_data.get("unit_price", 0)),
-            "date": str(voucher_data.get("assigned_date", ""))[:10],
-        }
+        consecutive = voucher_data.get("consecutive_number", "")
+        qr_data = f"https://sistema-vouchers-thecrc.vercel.app/v/{consecutive}"
         qr_bytes = generate_qr_bytes(qr_data)
         qr_img = ImageReader(BytesIO(qr_bytes))
         c.drawImage(qr_img, col_left_x, qr_y, width=qr_size, height=qr_size)

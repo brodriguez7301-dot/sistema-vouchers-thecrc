@@ -5,7 +5,7 @@ from pathlib import Path
 
 from database import Base, engine
 from config import settings
-from api import auth, providers, services, vouchers, voucher_usage, audit, reports
+from api import auth, providers, services, vouchers, voucher_usage, audit, reports, public
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +29,13 @@ with engine.connect() as conn:
         "ALTER TABLE services ALTER COLUMN base_price DROP NOT NULL",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS guest_price NUMERIC(10,2)",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audit_status VARCHAR(20) DEFAULT 'PENDIENTE'",
+        """CREATE TABLE IF NOT EXISTS voucher_scans (
+            scan_id SERIAL PRIMARY KEY,
+            voucher_id INTEGER NOT NULL REFERENCES vouchers(voucher_id),
+            scanned_at TIMESTAMP DEFAULT NOW(),
+            ip_address VARCHAR(45),
+            user_agent VARCHAR(300)
+        )""",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS invoice_number VARCHAR(80)",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audit_notes TEXT",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audited_by VARCHAR(100)",
@@ -62,6 +69,7 @@ app.include_router(vouchers.router)
 app.include_router(voucher_usage.router)
 app.include_router(audit.router)
 app.include_router(reports.router)
+app.include_router(public.router)
 
 
 @app.get("/")

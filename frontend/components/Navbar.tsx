@@ -12,6 +12,8 @@ const NAV: Record<string, { label: string; href: string }[]> = {
     { label: "Tarifas", href: "/admin/precios" },
     { label: "Vouchers", href: "/admin/vouchers" },
     { label: "Auditoría", href: "/admin/auditoria" },
+    { label: "Cuentas por Pagar", href: "/admin/cuentas-por-pagar" },
+    { label: "Provisiones", href: "/admin/provisiones" },
     { label: "Reportes", href: "/reports" },
   ],
   front_desk: [
@@ -30,9 +32,18 @@ export default function Navbar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav className="bg-[#002147] text-white h-full flex flex-col w-full">
-      <div className="px-5 py-5 border-b border-white/10">
-        <div className="text-xs font-bold uppercase tracking-widest text-blue-300">The Costa Rica Collection</div>
-        <div className="text-white font-semibold text-sm mt-0.5">Vouchers</div>
+      <div className="border-b border-white/10">
+        <img
+          src="/logo-collection.png"
+          alt="The Costa Rica Collection"
+          className="w-full object-cover"
+          style={{ maxHeight: "110px" }}
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+        <div className="px-5 py-3">
+          <div className="text-xs font-bold uppercase tracking-widest text-blue-300">The Costa Rica Collection</div>
+          <div className="text-white font-semibold text-sm mt-0.5">Vouchers</div>
+        </div>
       </div>
       <div className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
         {items.map((item) => (

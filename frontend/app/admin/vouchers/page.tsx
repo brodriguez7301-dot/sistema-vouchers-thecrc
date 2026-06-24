@@ -32,7 +32,7 @@ export default function VouchersPage() {
 
   useEffect(() => { load(); }, [statusFilter]);
   useEffect(() => {
-    api.getProviders().then(setProviders).catch(console.error);
+    api.getProviders(false).then(setProviders).catch(console.error);
     api.getServices().then(setServices).catch(console.error);
   }, []);
 
@@ -186,7 +186,8 @@ export default function VouchersPage() {
                   value={form.unit_price}
                   onChange={e => setForm(f => ({ ...f, unit_price: e.target.value }))}
                   placeholder="0.00"
-                  className="w-full border rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 mt-1" />
+                  className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 mt-1 focus:border-[#0066CC]" />
+                <p className="text-xs text-gray-400 mt-1">Editable — si hay acuerdo o descuento con el proveedor, ingrese el monto real cobrado.</p>
               </div>
 
               {/* PASO 4 — Huésped */}

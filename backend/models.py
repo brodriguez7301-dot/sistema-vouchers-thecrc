@@ -138,6 +138,19 @@ class Voucher(Base):
     provider = relationship("Provider", back_populates="vouchers")
     service = relationship("Service", back_populates="vouchers")
     usages = relationship("VoucherUsage", back_populates="voucher")
+    scans = relationship("VoucherScan", back_populates="voucher")
+
+
+class VoucherScan(Base):
+    __tablename__ = "voucher_scans"
+
+    scan_id      = Column(Integer, primary_key=True, index=True)
+    voucher_id   = Column(Integer, ForeignKey("vouchers.voucher_id"), nullable=False)
+    scanned_at   = Column(DateTime, server_default=func.now())
+    ip_address   = Column(String(45), nullable=True)
+    user_agent   = Column(String(300), nullable=True)
+
+    voucher = relationship("Voucher", back_populates="scans")
 
 
 class VoucherUsage(Base):
