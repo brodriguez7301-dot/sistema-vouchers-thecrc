@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import { api } from "@/lib/api";
-import { getStoredUser } from "@/lib/auth";
+
 import type { Voucher, Provider, Service } from "@/lib/types";
 import { getServiceChannels, CHANNEL_LABELS } from "@/lib/types";
 
@@ -21,10 +21,8 @@ const EMPTY_FORM = {
 };
 
 export default function VouchersPage() {
-  const currentUser = getStoredUser();
-  const isAdmin = currentUser?.role === "admin";
-
   const [vouchers, setVouchers]     = useState<Voucher[]>([]);
+  const [allVouchers, setAllVouchers] = useState<Voucher[]>([]);
   const [detail, setDetail]         = useState<Voucher | null>(null);
   const [providers, setProviders]   = useState<Provider[]>([]);
   const [services, setServices]     = useState<Service[]>([]);
@@ -33,13 +31,24 @@ export default function VouchersPage() {
   const [error, setError]           = useState("");
   const [generatingPdf, setGeneratingPdf] = useState<number | null>(null);
   const [statusFilter, setStatusFilter]   = useState("");
+  const [userFilter, setUserFilter]       = useState("");
   const [search, setSearch]         = useState("");
   const [form, setForm] = useState({ ...EMPTY_FORM });
 
   const load = () =>
-    api.getVouchers(statusFilter ? { status: statusFilter } : undefined).then(setVouchers).catch(console.error);
+    api.getVouchers().then(vs => { setAllVouchers(vs); setVouchers(vs); }).catch(console.error);
 
-  useEffect(() => { load(); }, [statusFilter]);
+  useEffect(() => { load(); }, []);
+
+  // Apply filters client-side
+  useEffect(() => {
+    let filtered = allVouchers;
+    if (statusFilter) filtered = filtered.filter(v => v.status === statusFilter);
+    if (userFilter)   filtered = filtered.filter(v => v.assigned_by === userFilter);
+    setVouchers(filtered);
+  }, [statusFilter, userFilter, allVouchers]);
+
+  const userOptions = Array.from(new Set(allVouchers.map(v => v.assigned_by).filter(Boolean))) as string[];
   useEffect(() => {
     api.getProviders(false).then(setProviders).catch(console.error);
     api.getServices().then(setServices).catch(console.error);
@@ -108,16 +117,15 @@ export default function VouchersPage() {
   return (
     <AppShell roles={["admin", "concierge"]}>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Vouchers</h1>
-          {!isAdmin && currentUser?.name && (
-            <p className="text-sm text-gray-400 mt-0.5">Mis vouchers — {currentUser.name}</p>
-          )}
-        </div>
-        <div className="flex gap-3">
+        <h1 className="text-2xl font-bold">Vouchers</h1>
+        <div className="flex gap-3 flex-wrap">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
             <option value="">Todos los estados</option>
             {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+          <select value={userFilter} onChange={e => setUserFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Todos los usuarios</option>
+            {userOptions.map(u => <option key={u} value={u}>{u}</option>)}
           </select>
           <button className="btn-primary" onClick={() => { setForm({ ...EMPTY_FORM }); setShowForm(true); }}>
             + Nuevo Voucher

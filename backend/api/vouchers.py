@@ -26,10 +26,10 @@ def list_vouchers(
     date_to: Optional[date] = None,
     skip: int = 0,
     limit: int = 100,
+    assigned_by: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(get_current_user),
 ):
-    assigned_by = current_user.name if current_user.role == "concierge" else None
     return crud.get_vouchers(db, status=status, property_name=property_name, date_from=date_from, date_to=date_to, assigned_by=assigned_by, skip=skip, limit=limit)
 
 
