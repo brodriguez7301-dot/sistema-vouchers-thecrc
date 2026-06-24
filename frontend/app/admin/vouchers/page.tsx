@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import { api } from "@/lib/api";
@@ -10,7 +10,7 @@ const PROPERTIES = ["Corcovado Wilderness Lodge", "Ojochal Garden", "Amarena Can
 const STATUSES   = ["PENDING", "ISSUED", "INVOICED", "PAID", "CANCELLED"];
 
 const EMPTY_FORM = {
-  service_id: "", sales_channel: "", unit_price: "",
+  service_id: "", sales_channel: "", guest_price: "", unit_price: "",
   provider_id: "", room_number: "", guest_name: "",
   property_name: PROPERTIES[0], quantity: "1", notes: "", service_date: "",
 };
@@ -25,7 +25,6 @@ export default function VouchersPage() {
   const [generatingPdf, setGeneratingPdf] = useState<number | null>(null);
   const [statusFilter, setStatusFilter]   = useState("");
   const [search, setSearch]         = useState("");
-  const photoRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
 
   const load = () =>
@@ -43,19 +42,18 @@ export default function VouchersPage() {
   function pickService(id: string) {
     const svc = services.find(s => s.service_id === Number(id));
     const chans = svc ? getServiceChannels(svc) : [];
-    // Auto-select first available channel
     const firstChan = chans[0];
     setForm(f => ({
       ...f,
       service_id: id,
       sales_channel: firstChan?.key ?? "",
-      unit_price: firstChan ? String(firstChan.price.toFixed(2)) : "",
+      guest_price: firstChan ? String(firstChan.price.toFixed(2)) : "",
     }));
   }
 
   function pickChannel(key: string) {
     const ch = channels.find(c => c.key === key);
-    setForm(f => ({ ...f, sales_channel: key, unit_price: ch ? String(ch.price.toFixed(2)) : f.unit_price }));
+    setForm(f => ({ ...f, sales_channel: key, guest_price: ch ? String(ch.price.toFixed(2)) : f.guest_price }));
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -63,8 +61,6 @@ export default function VouchersPage() {
     setSaving(true); setError("");
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => { if (v !== "") fd.append(k, v); });
-    const file = photoRef.current?.files?.[0];
-    if (file) fd.append("photo", file);
     try {
       await api.createVoucher(fd);
       setShowForm(false);
@@ -139,13 +135,14 @@ export default function VouchersPage() {
                 </select>
               </div>
 
-              {/* PASO 2 — Canal de precio */}
+              {/* PASO 2 — Canal de venta → precio al huésped */}
               {selectedService && (
                 <div>
-                  <label className="step-label">Paso 2 — Canal de Venta / Precio</label>
+                  <label className="step-label">Paso 2 — Canal de Venta</label>
+                  <p className="text-xs text-gray-400 mb-2">Seleccione cómo se vendió el servicio al huésped. El precio se toma del tarifario aprobado.</p>
                   {channels.length === 0 ? (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">
-                      Este servicio no tiene precios configurados. Ingrese el precio manualmente.
+                      Este servicio no tiene precios en el tarifario. Ingrese el precio al huésped manualmente.
                     </div>
                   ) : (
                     <div className="space-y-1.5">
@@ -165,24 +162,31 @@ export default function VouchersPage() {
                     </div>
                   )}
                   <div className="mt-2">
-                    <label className="text-xs text-gray-500">Precio final (USD) *</label>
-                    <input required type="number" step="0.01" min="0"
-                      value={form.unit_price}
-                      onChange={e => setForm(f => ({ ...f, unit_price: e.target.value }))}
+                    <label className="text-xs text-gray-500 font-semibold">Precio al Huésped (USD) — del tarifario</label>
+                    <input type="number" step="0.01" min="0"
+                      value={form.guest_price}
+                      onChange={e => setForm(f => ({ ...f, guest_price: e.target.value }))}
                       className="w-full border rounded-lg px-3 py-2 text-sm font-semibold text-[#0066CC]" />
                   </div>
                 </div>
               )}
 
-              {/* PASO 3 — Proveedor (libre) */}
+              {/* PASO 3 — Proveedor + costo */}
               <div>
-                <label className="step-label">Paso 3 — Proveedor (opcional)</label>
+                <label className="step-label">Paso 3 — Proveedor y Costo</label>
+                <p className="text-xs text-gray-400 mb-2">¿Quién ejecuta el servicio? Ingrese lo que el proveedor nos cobra.</p>
                 <select value={form.provider_id}
                   onChange={e => setForm(f => ({ ...f, provider_id: e.target.value }))}
-                  className="w-full border rounded-lg px-3 py-2 text-sm">
-                  <option value="">Sin proveedor externo / actividad propia</option>
+                  className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
+                  <option value="">Sin proveedor externo / servicio propio CWL</option>
                   {providers.map(p => <option key={p.provider_id} value={p.provider_id}>{p.name}</option>)}
                 </select>
+                <label className="text-xs text-gray-500 font-semibold">Costo del Proveedor (USD) *</label>
+                <input required type="number" step="0.01" min="0"
+                  value={form.unit_price}
+                  onChange={e => setForm(f => ({ ...f, unit_price: e.target.value }))}
+                  placeholder="0.00"
+                  className="w-full border rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 mt-1" />
               </div>
 
               {/* PASO 4 — Huésped */}
@@ -205,9 +209,9 @@ export default function VouchersPage() {
                 </div>
               </div>
 
-              {/* PASO 5 — Fecha, cantidad y foto */}
+              {/* PASO 5 — Fecha y PAX */}
               <div>
-                <label className="step-label">Paso 5 — Fecha, Cantidad y Foto</label>
+                <label className="step-label">Paso 5 — Fecha y PAX</label>
                 <div className="space-y-2">
                   <div>
                     <label className="text-xs text-gray-500">Fecha del servicio *</label>
@@ -215,14 +219,12 @@ export default function VouchersPage() {
                       onChange={e => setForm(f => ({ ...f, service_date: e.target.value }))}
                       className="w-full border rounded-lg px-3 py-2 text-sm" />
                   </div>
-                  <input type="number" min="1" placeholder="Cantidad (personas/unidades)"
-                    value={form.quantity}
-                    onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" />
                   <div>
-                    <label className="text-xs text-gray-500">Foto del huésped (opcional)</label>
-                    <input ref={photoRef} type="file" accept="image/*"
-                      className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700" />
+                    <label className="text-xs text-gray-500">Cantidad de PAX *</label>
+                    <input required type="number" min="1"
+                      value={form.quantity}
+                      onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm font-semibold" />
                   </div>
                   <textarea placeholder="Notas (opcional)" value={form.notes}
                     onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
@@ -253,7 +255,8 @@ export default function VouchersPage() {
                 <th className="table-th">Hab.</th>
                 <th className="table-th">Servicio</th>
                 <th className="table-th">Canal</th>
-                <th className="table-th">Precio</th>
+                <th className="table-th text-[#0066CC]">P. Huésped</th>
+                <th className="table-th text-gray-600">Costo Prov.</th>
                 <th className="table-th">Estado</th>
                 <th className="table-th">Acciones</th>
               </tr>
@@ -275,7 +278,10 @@ export default function VouchersPage() {
                       ? <span className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{CHANNEL_LABELS[v.sales_channel] ?? v.sales_channel}</span>
                       : <span className="text-gray-300 text-xs">—</span>}
                   </td>
-                  <td className="table-td font-semibold text-green-700">{fmt(v.unit_price)}</td>
+                  <td className="table-td font-semibold text-[#0066CC]">
+                    {v.guest_price != null ? fmt(v.guest_price) : <span className="text-gray-300 text-xs">—</span>}
+                  </td>
+                  <td className="table-td font-semibold text-gray-700">{fmt(v.unit_price)}</td>
                   <td className="table-td"><StatusBadge status={v.status} /></td>
                   <td className="table-td">
                     <div className="flex gap-2 items-center">
@@ -296,7 +302,7 @@ export default function VouchersPage() {
                 </tr>
               ))}
               {vouchers.length === 0 && (
-                <tr><td colSpan={8} className="table-td text-center text-gray-400 py-8">Sin vouchers</td></tr>
+                <tr><td colSpan={9} className="table-td text-center text-gray-400 py-8">Sin vouchers</td></tr>
               )}
             </tbody>
           </table>

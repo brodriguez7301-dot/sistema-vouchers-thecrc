@@ -11,6 +11,7 @@ const NAV: Record<string, { label: string; href: string }[]> = {
     { label: "Servicios", href: "/admin/services" },
     { label: "Tarifas", href: "/admin/precios" },
     { label: "Vouchers", href: "/admin/vouchers" },
+    { label: "Auditoría", href: "/admin/auditoria" },
     { label: "Reportes", href: "/reports" },
   ],
   front_desk: [

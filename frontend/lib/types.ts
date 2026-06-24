@@ -76,7 +76,8 @@ export interface Voucher {
   status: VoucherStatus;
   property_name: string;
   sales_channel?: string;
-  unit_price: number;
+  unit_price: number;       // costo del proveedor
+  guest_price?: number | null; // precio cobrado al huésped
   quantity: number;
   total_amount: number;
   pdf_generated: boolean;

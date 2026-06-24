@@ -27,6 +27,7 @@ with engine.connect() as conn:
         "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_web NUMERIC(10,2)",
         "ALTER TABLE services ALTER COLUMN provider_id DROP NOT NULL",
         "ALTER TABLE services ALTER COLUMN base_price DROP NOT NULL",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS guest_price NUMERIC(10,2)",
     ]:
         try:
             conn.execute(_sql(stmt))

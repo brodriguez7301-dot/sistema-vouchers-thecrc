@@ -113,7 +113,8 @@ class Voucher(Base):
     status = Column(SAEnum(VoucherStatus), default=VoucherStatus.PENDING, nullable=False)
     property_name = Column(String(100), nullable=False)
     sales_channel = Column(String(50), nullable=True)   # AGENCY_SHARED, AGENCY_PRIVATE, DIRECT_SHARED, DIRECT_PRIVATE, WEB
-    unit_price = Column(Numeric(10, 2), nullable=False)
+    unit_price = Column(Numeric(10, 2), nullable=False)  # costo del proveedor
+    guest_price = Column(Numeric(10, 2), nullable=True)  # precio cobrado al huésped (del tarifario)
     quantity = Column(Integer, default=1)
     total_amount = Column(Numeric(10, 2), nullable=False)
     pdf_generated = Column(Boolean, default=False)

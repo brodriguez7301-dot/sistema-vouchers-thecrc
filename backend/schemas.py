@@ -129,7 +129,8 @@ class VoucherCreate(BaseModel):
     guest_name: str
     property_name: str
     sales_channel: Optional[str] = None
-    unit_price: Decimal
+    unit_price: Decimal          # costo del proveedor
+    guest_price: Optional[Decimal] = None  # precio cobrado al huésped (del tarifario)
     quantity: int = 1
     notes: Optional[str] = None
     service_date: Optional[date] = None
@@ -155,6 +156,7 @@ class VoucherOut(BaseModel):
     property_name: str
     sales_channel: Optional[str] = None
     unit_price: Decimal
+    guest_price: Optional[Decimal] = None
     quantity: int
     total_amount: Decimal
     pdf_generated: bool
