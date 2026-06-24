@@ -205,6 +205,7 @@ def generate_pdf_for_voucher(db: Session, voucher_id: int) -> Optional[str]:
         "property_name": v.property_name,
         "assigned_date": str(v.assigned_date),
         "service_date": str(v.service_date) if v.service_date else None,
+        "quantity": v.quantity,
         "notes": v.notes,
     }
     photo_path = v.guest_photo_url if v.guest_photo_url else None
