@@ -77,6 +77,10 @@ export default function VouchersPage() {
     try {
       await api.generatePdf(v.voucher_id);
       window.open(api.downloadPdfUrl(v.voucher_id), "_blank");
+      // Al descargar el PDF queda marcado como emitido automáticamente
+      if (v.status === "PENDING") {
+        await api.updateVoucherStatus(v.voucher_id, "ISSUED");
+      }
       load();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Error generando PDF");
@@ -308,10 +312,6 @@ export default function VouchersPage() {
                         className="text-xs text-[#0066CC] hover:underline disabled:opacity-50">
                         {generatingPdf === v.voucher_id ? "…" : "PDF"}
                       </button>
-                      {v.status === "PENDING" && (
-                        <button onClick={() => api.updateVoucherStatus(v.voucher_id, "ISSUED").then(load)}
-                          className="text-xs text-green-600 hover:underline">Emitir</button>
-                      )}
                       {v.status === "PENDING" && (
                         <button onClick={() => api.updateVoucherStatus(v.voucher_id, "CANCELLED").then(load)}
                           className="text-xs text-red-500 hover:underline">Cancelar</button>
