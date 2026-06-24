@@ -7,7 +7,11 @@ import type { Voucher, Provider, Service } from "@/lib/types";
 import { getServiceChannels, CHANNEL_LABELS } from "@/lib/types";
 
 const PROPERTIES = ["Corcovado Wilderness Lodge", "Ojochal Garden", "Amarena Canvas Beach Hotel", "Oxigen"];
-const STATUSES   = ["PENDING", "ISSUED", "INVOICED", "PAID", "CANCELLED"];
+const STATUSES: { value: string; label: string }[] = [
+  { value: "PENDING",   label: "Creado" },
+  { value: "ISSUED",    label: "Enviado" },
+  { value: "CANCELLED", label: "Cancelado" },
+];
 
 const EMPTY_FORM = {
   service_id: "", sales_channel: "", guest_price: "", unit_price: "",
@@ -104,7 +108,7 @@ export default function VouchersPage() {
         <div className="flex gap-3">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
             <option value="">Todos los estados</option>
-            {STATUSES.map(s => <option key={s}>{s}</option>)}
+            {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           <button className="btn-primary" onClick={() => { setForm({ ...EMPTY_FORM }); setShowForm(true); }}>
             + Nuevo Voucher
@@ -264,7 +268,6 @@ export default function VouchersPage() {
                 <th className="table-th text-[#0066CC]">P. Huésped</th>
                 <th className="table-th text-gray-600">Costo Prov.</th>
                 <th className="table-th">Estado</th>
-                <th className="table-th">Proveedor</th>
                 <th className="table-th">Acciones</th>
               </tr>
             </thead>
@@ -289,10 +292,10 @@ export default function VouchersPage() {
                     {v.guest_price != null ? fmt(v.guest_price) : <span className="text-gray-300 text-xs">—</span>}
                   </td>
                   <td className="table-td font-semibold text-gray-700">{fmt(v.unit_price)}</td>
-                  <td className="table-td"><StatusBadge status={v.status} /></td>
                   <td className="table-td">
+                    <StatusBadge status={v.status} />
                     {v.provider_confirmed ? (
-                      <div>
+                      <div className="mt-1">
                         <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
                           ✓ Confirmado
                         </span>
@@ -302,9 +305,7 @@ export default function VouchersPage() {
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-xs text-gray-300">Sin confirmar</span>
-                    )}
+                    ) : null}
                   </td>
                   <td className="table-td" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2 items-center">
