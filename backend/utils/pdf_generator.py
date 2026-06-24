@@ -61,83 +61,68 @@ def generate_voucher_pdf(voucher_data: dict, photo_path: str | None = None) -> b
     c.setFont("Helvetica-Bold", 28)
     c.drawCentredString(w / 2, box_y + 3 * mm, voucher_data.get("consecutive_number", ""))
 
-    # Left column: photo + QR
-    col_left_x = margin
-    photo_w = 38 * mm
-    photo_h = 48 * mm
-    photo_y = box_y - photo_h - 4 * mm
-
-    if photo_path and Path(photo_path).exists():
-        try:
-            img = ImageReader(photo_path)
-            c.drawImage(img, col_left_x, photo_y, width=photo_w, height=photo_h, preserveAspectRatio=True, mask="auto")
-        except Exception:
-            _draw_photo_placeholder(c, col_left_x, photo_y, photo_w, photo_h)
-    else:
-        _draw_photo_placeholder(c, col_left_x, photo_y, photo_w, photo_h)
-
-    # Border around photo
-    c.setStrokeColor(LIGHT_GRAY)
-    c.setLineWidth(1)
-    c.rect(col_left_x, photo_y, photo_w, photo_h)
-
-    # QR code
-    qr_size = 22 * mm
-    qr_y = photo_y - qr_size - 4 * mm
-    try:
-        consecutive = voucher_data.get("consecutive_number", "")
-        qr_data = f"https://sistema-vouchers-thecrc.vercel.app/v/{consecutive}"
-        qr_bytes = generate_qr_bytes(qr_data)
-        qr_img = ImageReader(BytesIO(qr_bytes))
-        c.drawImage(qr_img, col_left_x, qr_y, width=qr_size, height=qr_size)
-        c.setFillColor(GRAY)
-        c.setFont("Helvetica", 6)
-        c.drawCentredString(col_left_x + qr_size / 2, qr_y - 4 * mm, "Scan to validate")
-    except Exception:
-        pass
-
-    # Right column: guest info
-    col_right_x = col_left_x + photo_w + 8 * mm
-    col_right_w = w - col_right_x - margin
-    line_h = 7 * mm
-    info_y = box_y - 8 * mm
+    # Data fields — full width, two columns side by side
+    qr_size   = 24 * mm
+    data_x    = margin
+    data_w    = w - 2 * margin - qr_size - 6 * mm   # leave room for QR on right
+    line_h    = 6.8 * mm
+    info_y    = box_y - 7 * mm
 
     service_date_str = ""
     if voucher_data.get("service_date"):
         service_date_str = str(voucher_data["service_date"])[:10]
     pax = voucher_data.get("quantity", 1)
+    provider_name = voucher_data.get("provider_name", "") or "Servicio propio CWL"
     fields = [
-        ("Room", voucher_data.get("room_number", "")),
-        ("Guest", voucher_data.get("guest_name", "")),
-        ("Service", voucher_data.get("service_name", "")),
-        ("Provider", voucher_data.get("provider_name", "")),
-        ("PAX", str(pax)),
-        ("Price", f"USD ${float(voucher_data.get('unit_price', 0)):,.2f}"),
+        ("Room",         voucher_data.get("room_number", "")),
+        ("Guest",        voucher_data.get("guest_name", "")),
+        ("Service",      voucher_data.get("service_name", "")),
+        ("Provider",     provider_name),
+        ("PAX",          str(pax)),
+        ("Price",        f"USD ${float(voucher_data.get('unit_price', 0)):,.2f}"),
         ("Service Date", service_date_str or "—"),
-        ("Property", voucher_data.get("property_name", "")),
+        ("Property",     voucher_data.get("property_name", "")),
     ]
 
     for label, value in fields:
-        # Label
         c.setFillColor(BLUE)
         c.setFont("Helvetica-Bold", 8)
-        c.drawString(col_right_x, info_y, label.upper() + ":")
-        # Value
+        c.drawString(data_x, info_y, label.upper() + ":")
+        label_w = c.stringWidth(label.upper() + ": ", "Helvetica-Bold", 8)
         c.setFillColor(DARK_GRAY)
         c.setFont("Helvetica", 9)
-        label_w = c.stringWidth(label.upper() + ": ", "Helvetica-Bold", 8)
-        c.drawString(col_right_x + label_w + 2, info_y, str(value))
-        # Separator line
+        # truncate long values so they don't bleed into QR
+        max_w = data_w - label_w - 2
+        display_val = str(value)
+        while display_val and c.stringWidth(display_val, "Helvetica", 9) > max_w:
+            display_val = display_val[:-1]
+        c.drawString(data_x + label_w + 2, info_y, display_val)
         c.setStrokeColor(LIGHT_GRAY)
         c.setLineWidth(0.5)
-        c.line(col_right_x, info_y - 2, col_right_x + col_right_w, info_y - 2)
+        c.line(data_x, info_y - 2, data_x + data_w, info_y - 2)
         info_y -= line_h
 
     # Notes
     if voucher_data.get("notes"):
         c.setFillColor(GRAY)
         c.setFont("Helvetica-Oblique", 7)
-        c.drawString(col_right_x, info_y, f"Notes: {voucher_data['notes'][:80]}")
+        c.drawString(data_x, info_y, f"Notes: {voucher_data['notes'][:90]}")
+
+    # QR code — right side, vertically centered in data area
+    qr_x = w - margin - qr_size
+    qr_top = box_y - 7 * mm
+    qr_y   = qr_top - qr_size
+    try:
+        consecutive = voucher_data.get("consecutive_number", "")
+        qr_data = f"https://sistema-vouchers-thecrc.vercel.app/v/{consecutive}"
+        qr_bytes = generate_qr_bytes(qr_data)
+        qr_img = ImageReader(BytesIO(qr_bytes))
+        c.drawImage(qr_img, qr_x, qr_y, width=qr_size, height=qr_size)
+        c.setFillColor(GRAY)
+        c.setFont("Helvetica", 6)
+        c.drawCentredString(qr_x + qr_size / 2, qr_y - 3.5 * mm, "Scan to validate")
+    except Exception:
+        pass
 
     # ── Confirmation stamp ────────────────────────────────────────────────────
     confirmed     = voucher_data.get("provider_confirmed", False)
@@ -175,9 +160,3 @@ def generate_voucher_pdf(voucher_data: dict, photo_path: str | None = None) -> b
     return buf.getvalue()
 
 
-def _draw_photo_placeholder(c, x, y, w, h):
-    c.setFillColor(HexColor("#F0F0F0"))
-    c.rect(x, y, w, h, fill=1, stroke=0)
-    c.setFillColor(GRAY)
-    c.setFont("Helvetica", 7)
-    c.drawCentredString(x + w / 2, y + h / 2, "GUEST PHOTO")
