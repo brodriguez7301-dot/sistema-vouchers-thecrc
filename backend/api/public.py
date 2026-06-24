@@ -51,6 +51,35 @@ def public_voucher(consecutive_number: str, request: Request, db: Session = Depe
         "status":       v.status,
         "notes":        v.notes,
         "scan_count":   db.query(VoucherScan).filter(VoucherScan.voucher_id == v.voucher_id).count(),
+        "provider_confirmed":    v.provider_confirmed or False,
+        "provider_confirmed_at": str(v.provider_confirmed_at) if v.provider_confirmed_at else None,
+    }
+
+
+@router.post("/voucher/{consecutive_number}/confirm")
+def confirm_voucher(consecutive_number: str, request: Request, db: Session = Depends(get_db)):
+    """
+    Public endpoint — no auth required.
+    Provider taps 'Confirmado' on the QR page to acknowledge receipt.
+    Idempotent: calling twice does not reset the timestamp.
+    """
+    v = db.query(Voucher).filter(Voucher.consecutive_number == consecutive_number).first()
+    if not v:
+        from fastapi import HTTPException
+        raise HTTPException(404, "Voucher no encontrado")
+    if v.status == "CANCELLED":
+        from fastapi import HTTPException
+        raise HTTPException(400, "Este voucher está cancelado")
+    if not v.provider_confirmed:
+        ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+        v.provider_confirmed = True
+        v.provider_confirmed_at = datetime.utcnow()
+        v.provider_confirmed_ip = ip
+        db.commit()
+    return {
+        "ok": True,
+        "consecutive_number": consecutive_number,
+        "provider_confirmed_at": str(v.provider_confirmed_at),
     }
 
 

@@ -101,6 +101,8 @@ export interface Voucher {
   audit_notes?: string | null;
   audited_by?: string | null;
   audited_at?: string | null;
+  provider_confirmed?: boolean;
+  provider_confirmed_at?: string | null;
   created_date: string;
   provider?: Provider;
   service?: Service;

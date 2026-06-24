@@ -40,6 +40,9 @@ with engine.connect() as conn:
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audit_notes TEXT",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audited_by VARCHAR(100)",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audited_at TIMESTAMP",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS provider_confirmed BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS provider_confirmed_at TIMESTAMP",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS provider_confirmed_ip VARCHAR(45)",
     ]:
         try:
             conn.execute(_sql(stmt))

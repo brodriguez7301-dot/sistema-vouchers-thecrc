@@ -167,6 +167,8 @@ class VoucherOut(BaseModel):
     audit_notes: Optional[str] = None
     audited_by: Optional[str] = None
     audited_at: Optional[datetime] = None
+    provider_confirmed: bool = False
+    provider_confirmed_at: Optional[datetime] = None
     created_date: datetime
     provider: Optional[ProviderOut] = None
     service: Optional[ServiceOut] = None

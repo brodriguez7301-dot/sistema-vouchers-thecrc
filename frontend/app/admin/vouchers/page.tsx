@@ -259,6 +259,7 @@ export default function VouchersPage() {
                 <th className="table-th text-[#0066CC]">P. Huésped</th>
                 <th className="table-th text-gray-600">Costo Prov.</th>
                 <th className="table-th">Estado</th>
+                <th className="table-th">Proveedor</th>
                 <th className="table-th">Acciones</th>
               </tr>
             </thead>
@@ -284,6 +285,22 @@ export default function VouchersPage() {
                   </td>
                   <td className="table-td font-semibold text-gray-700">{fmt(v.unit_price)}</td>
                   <td className="table-td"><StatusBadge status={v.status} /></td>
+                  <td className="table-td">
+                    {v.provider_confirmed ? (
+                      <div>
+                        <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
+                          ✓ Confirmado
+                        </span>
+                        {v.provider_confirmed_at && (
+                          <div className="text-[10px] text-gray-400 mt-0.5">
+                            {new Date(v.provider_confirmed_at).toLocaleString("es-CR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-300">Sin confirmar</span>
+                    )}
+                  </td>
                   <td className="table-td">
                     <div className="flex gap-2 items-center">
                       <button onClick={() => handleGeneratePdf(v)} disabled={generatingPdf === v.voucher_id}

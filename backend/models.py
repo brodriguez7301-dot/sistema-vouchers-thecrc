@@ -128,10 +128,14 @@ class Voucher(Base):
     notes = Column(Text)
     # Auditoría
     audit_status = Column(String(20), default="PENDIENTE", nullable=True)
-    invoice_number = Column(String(80), nullable=True)   # factura del proveedor asociada
+    invoice_number = Column(String(80), nullable=True)
     audit_notes = Column(Text, nullable=True)
     audited_by = Column(String(100), nullable=True)
     audited_at = Column(DateTime, nullable=True)
+    # Confirmación del proveedor (vía QR)
+    provider_confirmed = Column(Boolean, default=False, nullable=False)
+    provider_confirmed_at = Column(DateTime, nullable=True)
+    provider_confirmed_ip = Column(String(45), nullable=True)
     created_date = Column(DateTime, server_default=func.now())
     updated_date = Column(DateTime, onupdate=func.now())
 

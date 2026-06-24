@@ -18,6 +18,8 @@ interface VoucherPublic {
   status: string;
   notes: string | null;
   scan_count: number;
+  provider_confirmed: boolean;
+  provider_confirmed_at: string | null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -29,7 +31,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  PENDING:   "bg-blue-100 text-blue-700",
+  PENDING:   "bg-green-100 text-green-700",
   ISSUED:    "bg-green-100 text-green-700",
   INVOICED:  "bg-purple-100 text-purple-700",
   PAID:      "bg-gray-100 text-gray-600",
@@ -38,22 +40,55 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function PublicVoucherPage() {
   const { consecutive } = useParams<{ consecutive: string }>();
-  const [data, setData]     = useState<VoucherPublic | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData]         = useState<VoucherPublic | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmed, setConfirmed]   = useState(false);
+  const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!consecutive) return;
     fetch(`${API}/api/public/voucher/${consecutive}`)
       .then(r => r.json())
-      .then(setData)
+      .then(d => {
+        setData(d);
+        if (d.provider_confirmed) {
+          setConfirmed(true);
+          setConfirmedAt(d.provider_confirmed_at ?? null);
+        }
+      })
       .catch(() => setData({ found: false, consecutive_number: consecutive } as VoucherPublic))
       .finally(() => setLoading(false));
   }, [consecutive]);
 
+  async function handleConfirm() {
+    if (!consecutive || confirming || confirmed) return;
+    setConfirming(true);
+    try {
+      const r = await fetch(`${API}/api/public/voucher/${consecutive}/confirm`, { method: "POST" });
+      const json = await r.json();
+      if (r.ok) {
+        setConfirmed(true);
+        setConfirmedAt(json.provider_confirmed_at ?? new Date().toISOString());
+      }
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  function fmtDateTime(iso: string | null) {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleString("es-CR", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return iso; }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">
 
-      {/* Header */}
       <div className="w-full max-w-md mb-4">
         <div className="bg-[#002147] rounded-t-2xl px-6 py-4 flex items-center justify-between">
           <div>
@@ -91,7 +126,7 @@ export default function PublicVoucherPage() {
             </div>
           </div>
 
-          {/* Estado */}
+          {/* Estado del voucher */}
           <div className="flex justify-center py-3 border-b border-gray-100">
             {data.status === "CANCELLED" ? (
               <span className="px-4 py-1.5 rounded-full font-bold text-sm bg-red-100 text-red-700">
@@ -106,11 +141,11 @@ export default function PublicVoucherPage() {
 
           {/* Datos del servicio */}
           <div className="px-6 py-4 space-y-3">
-            <Row label="Servicio" value={`${data.service_code ? `[${data.service_code}] ` : ""}${data.service_name}`} />
-            <Row label="Proveedor" value={data.provider_name} />
-            <Row label="Huésped" value={data.guest_name} />
-            <Row label="Habitación" value={data.room_number} />
-            <Row label="Propiedad" value={data.property_name} />
+            <Row label="Servicio"    value={`${data.service_code ? `[${data.service_code}] ` : ""}${data.service_name}`} />
+            <Row label="Proveedor"   value={data.provider_name} />
+            <Row label="Huésped"     value={data.guest_name} />
+            <Row label="Habitación"  value={data.room_number} />
+            <Row label="Propiedad"   value={data.property_name} />
             {data.service_date && <Row label="Fecha del servicio" value={data.service_date} />}
             <Row label="Cantidad de PAX" value={String(data.quantity)} />
             {data.notes && (
@@ -121,10 +156,43 @@ export default function PublicVoucherPage() {
             )}
           </div>
 
+          {/* Confirmación del proveedor */}
+          {data.status !== "CANCELLED" && (
+            <div className="px-6 pb-5">
+              {confirmed ? (
+                <div className="rounded-xl bg-green-50 border border-green-200 px-5 py-4 text-center">
+                  <div className="text-green-600 text-2xl mb-1">✓</div>
+                  <div className="font-bold text-green-700 text-base">Recepción confirmada</div>
+                  {confirmedAt && (
+                    <div className="text-green-600 text-xs mt-1">{fmtDateTime(confirmedAt)}</div>
+                  )}
+                  <div className="text-green-600 text-xs mt-2">
+                    Su confirmación ha sido registrada en el sistema.
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs text-gray-500 text-center mb-3">
+                    Al confirmar, acepta haber recibido este voucher oficialmente.
+                  </p>
+                  <button
+                    onClick={handleConfirm}
+                    disabled={confirming}
+                    className="w-full bg-[#002147] text-white font-bold py-4 rounded-xl text-base tracking-wide active:scale-95 transition-transform disabled:opacity-60"
+                  >
+                    {confirming ? "Registrando…" : "✓  Confirmar recepción del voucher"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Scan count */}
           <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 text-center">
             <p className="text-xs text-gray-400">
-              Este voucher ha sido consultado <span className="font-bold text-gray-600">{data.scan_count}</span> {data.scan_count === 1 ? "vez" : "veces"}
+              Este voucher ha sido consultado{" "}
+              <span className="font-bold text-gray-600">{data.scan_count}</span>{" "}
+              {data.scan_count === 1 ? "vez" : "veces"}
             </p>
           </div>
 

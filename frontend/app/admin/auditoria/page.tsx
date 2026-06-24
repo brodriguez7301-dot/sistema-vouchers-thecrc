@@ -195,13 +195,14 @@ export default function AuditoriaPage() {
                 <th className="table-th">Costo Prov.</th>
                 <th className="table-th">Margen</th>
                 <th className="table-th">Factura</th>
+                <th className="table-th">Confirmación</th>
                 <th className="table-th">Auditoría</th>
                 <th className="table-th">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading && (
-                <tr><td colSpan={13} className="table-td text-center text-gray-400 py-8">Cargando…</td></tr>
+                <tr><td colSpan={14} className="table-td text-center text-gray-400 py-8">Cargando…</td></tr>
               )}
               {!loading && displayed.map(v => {
                 const gp = v.guest_price ?? null;
@@ -246,6 +247,20 @@ export default function AuditoriaPage() {
                       {v.invoice_number ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="table-td">
+                      {v.provider_confirmed ? (
+                        <div>
+                          <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">✓ Confirmado</span>
+                          {v.provider_confirmed_at && (
+                            <div className="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">
+                              {new Date(v.provider_confirmed_at).toLocaleString("es-CR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300 whitespace-nowrap">Sin confirmar</span>
+                      )}
+                    </td>
+                    <td className="table-td">
                       <AuditBadge status={v.audit_status} />
                     </td>
                     <td className="table-td">
@@ -258,7 +273,7 @@ export default function AuditoriaPage() {
                 );
               })}
               {!loading && displayed.length === 0 && (
-                <tr><td colSpan={13} className="table-td text-center text-gray-400 py-8">Sin vouchers</td></tr>
+                <tr><td colSpan={14} className="table-td text-center text-gray-400 py-8">Sin vouchers</td></tr>
               )}
             </tbody>
           </table>
@@ -313,6 +328,23 @@ export default function AuditoriaPage() {
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* Confirmación del proveedor */}
+            <div className={`rounded-lg px-4 py-3 mb-4 text-xs flex items-center gap-3 ${modal.voucher.provider_confirmed ? "bg-green-50 border border-green-200" : "bg-amber-50 border border-amber-200"}`}>
+              <span className={`text-lg ${modal.voucher.provider_confirmed ? "text-green-600" : "text-amber-500"}`}>
+                {modal.voucher.provider_confirmed ? "✓" : "⏳"}
+              </span>
+              <div>
+                <div className={`font-bold ${modal.voucher.provider_confirmed ? "text-green-700" : "text-amber-700"}`}>
+                  {modal.voucher.provider_confirmed ? "Proveedor confirmó la recepción" : "Pendiente de confirmación del proveedor"}
+                </div>
+                {modal.voucher.provider_confirmed && modal.voucher.provider_confirmed_at && (
+                  <div className="text-green-600 mt-0.5">
+                    {new Date(modal.voucher.provider_confirmed_at).toLocaleString("es-CR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Factura del proveedor */}
