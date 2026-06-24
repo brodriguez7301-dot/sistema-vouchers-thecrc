@@ -190,7 +190,8 @@ def update_voucher_status(db: Session, voucher_id: int, status: VoucherStatus) -
     return obj
 
 
-def generate_pdf_for_voucher(db: Session, voucher_id: int) -> Optional[str]:
+def generate_pdf_bytes_for_voucher(db: Session, voucher_id: int) -> Optional[tuple[bytes, str]]:
+    """Returns (pdf_bytes, filename) without writing to disk."""
     v = get_voucher(db, voucher_id)
     if not v:
         return None
@@ -210,13 +211,10 @@ def generate_pdf_for_voucher(db: Session, voucher_id: int) -> Optional[str]:
     }
     photo_path = v.guest_photo_url if v.guest_photo_url else None
     pdf_bytes = generate_voucher_pdf(data, photo_path)
-    pdf_filename = f"{v.consecutive_number}.pdf"
-    pdf_path = Path(settings.pdf_dir) / pdf_filename
-    pdf_path.write_bytes(pdf_bytes)
-    v.pdf_generated = True
-    v.pdf_url = str(pdf_path)
-    db.commit()
-    return str(pdf_path)
+    if not v.pdf_generated:
+        v.pdf_generated = True
+        db.commit()
+    return pdf_bytes, f"{v.consecutive_number}.pdf"
 
 
 # ── Voucher Usage ─────────────────────────────────────────────────────────────

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
 from pathlib import Path
+from io import BytesIO
 import shutil
 import uuid
 
@@ -126,10 +127,10 @@ def audit_voucher(voucher_id: int, data: schemas.VoucherAuditUpdate, db: Session
 
 @router.post("/{voucher_id}/generate-pdf")
 def generate_pdf(voucher_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    path = crud.generate_pdf_for_voucher(db, voucher_id)
-    if not path:
+    result = crud.generate_pdf_bytes_for_voucher(db, voucher_id)
+    if not result:
         raise HTTPException(404, "Voucher not found")
-    return {"message": "PDF generated", "pdf_url": path}
+    return {"message": "PDF ready"}
 
 
 @router.get("/{voucher_id}/pdf")
@@ -144,17 +145,12 @@ def download_pdf(voucher_id: int, token: Optional[str] = None, db: Session = Dep
             raise HTTPException(status_code=401, detail="Not authenticated")
     except JWTError:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    v = crud.get_voucher(db, voucher_id)
-    if not v:
+    result = crud.generate_pdf_bytes_for_voucher(db, voucher_id)
+    if not result:
         raise HTTPException(404, "Voucher not found")
-    if not v.pdf_generated or not v.pdf_url:
-        path = crud.generate_pdf_for_voucher(db, voucher_id)
-        if not path:
-            raise HTTPException(500, "PDF generation failed")
-        pdf_path = Path(path)
-    else:
-        pdf_path = Path(v.pdf_url)
-    if not pdf_path.exists():
-        path = crud.generate_pdf_for_voucher(db, voucher_id)
-        pdf_path = Path(path)
-    return FileResponse(str(pdf_path), media_type="application/pdf", filename=f"{v.consecutive_number}.pdf")
+    pdf_bytes, filename = result
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
