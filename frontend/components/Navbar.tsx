@@ -9,6 +9,7 @@ const NAV: Record<string, { label: string; href: string }[]> = {
     { label: "Dashboard", href: "/admin" },
     { label: "Proveedores", href: "/admin/providers" },
     { label: "Servicios", href: "/admin/services" },
+    { label: "Tarifas", href: "/admin/precios" },
     { label: "Vouchers", href: "/admin/vouchers" },
     { label: "Reportes", href: "/reports" },
   ],

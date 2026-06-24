@@ -15,6 +15,9 @@ with engine.connect() as conn:
         conn.execute(__import__("sqlalchemy").text(
             "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS service_date DATE"
         ))
+        conn.execute(__import__("sqlalchemy").text(
+            "ALTER TABLE services ADD COLUMN IF NOT EXISTS guest_price NUMERIC(10, 2)"
+        ))
         conn.commit()
     except Exception:
         pass

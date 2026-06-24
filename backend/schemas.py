@@ -73,6 +73,7 @@ class ServiceCreate(BaseModel):
     service_type: ServiceType
     description: Optional[str] = None
     base_price: Decimal
+    guest_price: Optional[Decimal] = None
     currency: str = "USD"
 
 
@@ -81,6 +82,7 @@ class ServiceUpdate(BaseModel):
     service_type: Optional[ServiceType] = None
     description: Optional[str] = None
     base_price: Optional[Decimal] = None
+    guest_price: Optional[Decimal] = None
     currency: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -92,6 +94,7 @@ class ServiceOut(BaseModel):
     service_type: ServiceType
     description: Optional[str]
     base_price: Decimal
+    guest_price: Optional[Decimal] = None
     currency: str
     is_active: bool
     created_date: datetime

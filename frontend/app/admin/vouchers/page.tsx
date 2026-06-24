@@ -111,7 +111,8 @@ export default function VouchersPage() {
                 <label className="text-xs font-semibold text-[#0066CC] uppercase mb-1 block">Paso 2 — Servicio</label>
                 <select required value={form.service_id} onChange={e => {
                   const svc = filteredServices.find(s => s.service_id === Number(e.target.value));
-                  setForm(f => ({ ...f, service_id: e.target.value, unit_price: svc ? String(svc.base_price) : f.unit_price }));
+                  const price = svc ? (svc.guest_price ?? svc.base_price) : null;
+                  setForm(f => ({ ...f, service_id: e.target.value, unit_price: price != null ? String(Number(price).toFixed(2)) : f.unit_price }));
                 }} className="w-full border rounded-lg px-3 py-2 text-sm">
                   <option value="">Seleccionar servicio…</option>
                   {filteredServices.map(s => <option key={s.service_id} value={s.service_id}>{s.service_name} — {s.currency} ${s.base_price}</option>)}

@@ -79,6 +79,7 @@ class Service(Base):
     service_type = Column(SAEnum(ServiceType), nullable=False)
     description = Column(Text)
     base_price = Column(Numeric(10, 2), nullable=False)
+    guest_price = Column(Numeric(10, 2), nullable=True)
     currency = Column(String(3), default="USD")
     is_active = Column(Boolean, default=True)
     created_date = Column(DateTime, server_default=func.now())

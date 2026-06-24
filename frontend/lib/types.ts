@@ -26,6 +26,7 @@ export interface Service {
   service_type: "TOUR" | "TRANSPORT" | "ACTIVITY" | "OTHER";
   description?: string;
   base_price: number;
+  guest_price?: number | null;
   currency: string;
   is_active: boolean;
   created_date: string;
