@@ -208,6 +208,8 @@ def generate_pdf_bytes_for_voucher(db: Session, voucher_id: int) -> Optional[tup
         "service_date": str(v.service_date) if v.service_date else None,
         "quantity": v.quantity,
         "notes": v.notes,
+        "provider_confirmed": v.provider_confirmed or False,
+        "provider_confirmed_at": str(v.provider_confirmed_at) if v.provider_confirmed_at else None,
     }
     photo_path = v.guest_photo_url if v.guest_photo_url else None
     pdf_bytes = generate_voucher_pdf(data, photo_path)

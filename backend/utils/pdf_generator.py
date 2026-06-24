@@ -139,6 +139,31 @@ def generate_voucher_pdf(voucher_data: dict, photo_path: str | None = None) -> b
         c.setFont("Helvetica-Oblique", 7)
         c.drawString(col_right_x, info_y, f"Notes: {voucher_data['notes'][:80]}")
 
+    # ── Confirmation stamp ────────────────────────────────────────────────────
+    confirmed     = voucher_data.get("provider_confirmed", False)
+    confirmed_at  = voucher_data.get("provider_confirmed_at")
+
+    stamp_h   = 12 * mm
+    stamp_y   = 7 * mm          # just above footer
+    stamp_x   = margin
+    stamp_w   = w - 2 * margin
+
+    if confirmed:
+        confirmed_date = str(confirmed_at)[:16].replace("T", " ") if confirmed_at else ""
+        c.setFillColor(HexColor("#0F6E56"))          # dark teal
+        c.roundRect(stamp_x, stamp_y, stamp_w, stamp_h, 3, fill=1, stroke=0)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(stamp_x + 4 * mm, stamp_y + 4.5 * mm, "✓  RECEPCIÓN CONFIRMADA POR PROVEEDOR")
+        c.setFont("Helvetica", 8)
+        c.drawRightString(stamp_x + stamp_w - 4 * mm, stamp_y + 4.5 * mm, confirmed_date)
+    else:
+        c.setFillColor(HexColor("#888780"))          # gray
+        c.roundRect(stamp_x, stamp_y, stamp_w, stamp_h, 3, fill=1, stroke=0)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(stamp_x + stamp_w / 2, stamp_y + 4.5 * mm, "⏳  PENDIENTE DE CONFIRMACIÓN DEL PROVEEDOR")
+
     # Footer
     c.setFillColor(LIGHT_GRAY)
     c.rect(0, 0, w, 6 * mm, fill=1, stroke=0)

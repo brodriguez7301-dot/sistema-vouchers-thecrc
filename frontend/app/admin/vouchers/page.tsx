@@ -17,6 +17,7 @@ const EMPTY_FORM = {
 
 export default function VouchersPage() {
   const [vouchers, setVouchers]     = useState<Voucher[]>([]);
+  const [detail, setDetail]         = useState<Voucher | null>(null);
   const [providers, setProviders]   = useState<Provider[]>([]);
   const [services, setServices]     = useState<Service[]>([]);
   const [showForm, setShowForm]     = useState(false);
@@ -265,8 +266,8 @@ export default function VouchersPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {vouchers.map(v => (
-                <tr key={v.voucher_id} className="hover:bg-gray-50">
-                  <td className="table-td font-bold text-[#FF0000] font-mono text-xs">{v.consecutive_number}</td>
+                <tr key={v.voucher_id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setDetail(v)}>
+                  <td className="table-td font-bold text-[#FF0000] font-mono text-xs underline decoration-dotted">{v.consecutive_number}</td>
                   <td className="table-td font-medium">{v.guest_name}</td>
                   <td className="table-td">{v.room_number}</td>
                   <td className="table-td text-gray-500 max-w-[180px] truncate">
@@ -301,7 +302,7 @@ export default function VouchersPage() {
                       <span className="text-xs text-gray-300">Sin confirmar</span>
                     )}
                   </td>
-                  <td className="table-td">
+                  <td className="table-td" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2 items-center">
                       <button onClick={() => handleGeneratePdf(v)} disabled={generatingPdf === v.voucher_id}
                         className="text-xs text-[#0066CC] hover:underline disabled:opacity-50">
@@ -326,6 +327,100 @@ export default function VouchersPage() {
           </table>
         </div>
       </div>
+      {/* ── Modal detalle de voucher ──────────────────────────────────────── */}
+      {detail && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="bg-[#002147] px-6 py-4 flex items-center justify-between">
+              <div>
+                <div className="text-xs text-blue-300 uppercase tracking-wide">The Costa Rica Collection</div>
+                <div className="font-mono font-bold text-red-400 text-xl mt-0.5">{detail.consecutive_number}</div>
+              </div>
+              <button onClick={() => setDetail(null)} className="text-blue-300 hover:text-white text-2xl leading-none">×</button>
+            </div>
+
+            {/* Confirmation status — PROMINENTE */}
+            {detail.provider_confirmed ? (
+              <div className="bg-green-600 px-6 py-4 flex items-center gap-4">
+                <div className="text-white text-3xl font-bold">✓</div>
+                <div>
+                  <div className="text-white font-bold text-base">Recepción confirmada por el proveedor</div>
+                  {detail.provider_confirmed_at && (
+                    <div className="text-green-100 text-sm mt-0.5">
+                      {new Date(detail.provider_confirmed_at).toLocaleString("es-CR", {
+                        weekday: "long", day: "2-digit", month: "long", year: "numeric",
+                        hour: "2-digit", minute: "2-digit"
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border-b-2 border-amber-400 px-6 py-3 flex items-center gap-3">
+                <div className="text-amber-500 text-2xl">⏳</div>
+                <div className="text-amber-700 font-semibold text-sm">Pendiente de confirmación del proveedor</div>
+              </div>
+            )}
+
+            {/* Datos del voucher */}
+            <div className="px-6 py-4 space-y-2 text-sm">
+              <Row2 label="Servicio"      value={`${detail.service?.pricing_code ? `[${detail.service.pricing_code}] ` : ""}${detail.service?.service_name ?? "—"}`} />
+              <Row2 label="Proveedor"     value={detail.provider?.name ?? "Servicio propio CWL"} />
+              <Row2 label="Huésped"       value={detail.guest_name} />
+              <Row2 label="Habitación"    value={detail.room_number} />
+              <Row2 label="Propiedad"     value={detail.property_name} />
+              {detail.service_date && <Row2 label="Fecha servicio" value={detail.service_date} />}
+              <Row2 label="PAX"           value={String(detail.quantity)} />
+              {detail.sales_channel && <Row2 label="Canal"         value={CHANNEL_LABELS[detail.sales_channel] ?? detail.sales_channel} />}
+              <div className="border-t pt-2 mt-2 flex justify-between">
+                <div>
+                  <div className="text-xs text-gray-400">Precio huésped</div>
+                  <div className="font-bold text-[#0066CC] text-base">{detail.guest_price != null ? `$${Number(detail.guest_price).toFixed(2)}` : "—"}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-400">Costo proveedor</div>
+                  <div className="font-bold text-gray-700 text-base">${Number(detail.unit_price).toFixed(2)}</div>
+                </div>
+                {detail.guest_price != null && (
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400">Margen</div>
+                    <div className={`font-bold text-base ${Number(detail.guest_price) >= Number(detail.unit_price) ? "text-green-600" : "text-red-600"}`}>
+                      ${(Number(detail.guest_price) - Number(detail.unit_price)).toFixed(2)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {detail.invoice_number && <Row2 label="Factura"      value={detail.invoice_number} />}
+              {detail.audit_status   && <Row2 label="Auditoría"    value={detail.audit_status} />}
+              {detail.notes          && <Row2 label="Notas"        value={detail.notes} />}
+            </div>
+
+            {/* Acciones */}
+            <div className="px-6 pb-5 flex gap-3">
+              <button
+                onClick={() => { handleGeneratePdf(detail); }}
+                disabled={generatingPdf === detail.voucher_id}
+                className="flex-1 bg-[#002147] text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50">
+                {generatingPdf === detail.voucher_id ? "Generando…" : "Descargar PDF"}
+              </button>
+              <button onClick={() => setDetail(null)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2.5 rounded-xl hover:bg-gray-50">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
+  );
+}
+
+function Row2({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-start gap-4 py-1 border-b border-gray-50">
+      <span className="text-xs text-gray-400 uppercase tracking-wide whitespace-nowrap">{label}</span>
+      <span className="text-sm text-gray-800 font-medium text-right">{value}</span>
+    </div>
   );
 }
