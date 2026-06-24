@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/services", tags=["services"])
 
 
 @router.get("/", response_model=List[schemas.ServiceOut])
-def list_services(provider_id: Optional[int] = None, active_only: bool = True, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    return crud.get_services(db, provider_id=provider_id, active_only=active_only)
+def list_services(active_only: bool = True, db: Session = Depends(get_db), _=Depends(get_current_user)):
+    return crud.get_services(db, active_only=active_only)
 
 
 @router.get("/{service_id}", response_model=schemas.ServiceOut)

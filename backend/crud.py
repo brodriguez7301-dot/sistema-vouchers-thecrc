@@ -78,17 +78,15 @@ def delete_provider(db: Session, provider_id: int) -> bool:
 
 # ── Services ──────────────────────────────────────────────────────────────────
 
-def get_services(db: Session, provider_id: Optional[int] = None, active_only: bool = True):
-    q = db.query(Service).options(joinedload(Service.provider))
+def get_services(db: Session, active_only: bool = True):
+    q = db.query(Service)
     if active_only:
         q = q.filter(Service.is_active == True)
-    if provider_id:
-        q = q.filter(Service.provider_id == provider_id)
-    return q.order_by(Service.service_name).all()
+    return q.order_by(Service.category, Service.pricing_code, Service.service_name).all()
 
 
 def get_service(db: Session, service_id: int) -> Optional[Service]:
-    return db.query(Service).options(joinedload(Service.provider)).filter(Service.service_id == service_id).first()
+    return db.query(Service).filter(Service.service_id == service_id).first()
 
 
 def create_service(db: Session, data: schemas.ServiceCreate) -> Service:
