@@ -21,16 +21,42 @@ export interface Provider {
 
 export interface Service {
   service_id: number;
-  provider_id: number;
   service_name: string;
   service_type: "TOUR" | "TRANSPORT" | "ACTIVITY" | "OTHER";
   description?: string;
-  base_price: number;
-  guest_price?: number | null;
+  pricing_code?: string;
+  category?: string;
+  year: number;
   currency: string;
   is_active: boolean;
   created_date: string;
-  provider?: Provider;
+  base_price?: number | null;
+  price_agency_shared?: number | null;
+  price_agency_private?: number | null;
+  price_direct_shared?: number | null;
+  price_direct_private?: number | null;
+  price_web?: number | null;
+}
+
+export const CHANNEL_LABELS: Record<string, string> = {
+  AGENCY_SHARED:   "Agencia — Compartido",
+  AGENCY_PRIVATE:  "Agencia — Privado",
+  DIRECT_SHARED:   "Directo — Compartido",
+  DIRECT_PRIVATE:  "Directo — Privado",
+  WEB:             "Web",
+};
+
+export function getServiceChannels(s: Service): { key: string; label: string; price: number }[] {
+  const map: [string, number | null | undefined][] = [
+    ["AGENCY_SHARED",  s.price_agency_shared],
+    ["AGENCY_PRIVATE", s.price_agency_private],
+    ["DIRECT_SHARED",  s.price_direct_shared],
+    ["DIRECT_PRIVATE", s.price_direct_private],
+    ["WEB",            s.price_web],
+  ];
+  return map
+    .filter(([, p]) => p != null && Number(p) > 0)
+    .map(([key, p]) => ({ key, label: CHANNEL_LABELS[key], price: Number(p) }));
 }
 
 export type VoucherStatus = "PENDING" | "ISSUED" | "INVOICED" | "PAID" | "CANCELLED";
@@ -38,17 +64,18 @@ export type VoucherStatus = "PENDING" | "ISSUED" | "INVOICED" | "PAID" | "CANCEL
 export interface Voucher {
   voucher_id: number;
   consecutive_number: string;
-  provider_id: number;
+  provider_id?: number | null;
   service_id: number;
   room_number: string;
   guest_name: string;
-  guest_photo_url: string;
+  guest_photo_url?: string;
   qr_code_data?: string;
   assigned_date: string;
   service_date?: string;
   assigned_by: string;
   status: VoucherStatus;
   property_name: string;
+  sales_channel?: string;
   unit_price: number;
   quantity: number;
   total_amount: number;

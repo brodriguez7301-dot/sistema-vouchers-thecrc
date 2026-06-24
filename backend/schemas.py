@@ -68,48 +68,67 @@ class ProviderOut(BaseModel):
 # ── Services ──────────────────────────────────────────────────────────────────
 
 class ServiceCreate(BaseModel):
-    provider_id: int
     service_name: str
     service_type: ServiceType
     description: Optional[str] = None
-    base_price: Decimal
-    guest_price: Optional[Decimal] = None
+    pricing_code: Optional[str] = None
+    category: Optional[str] = None
+    year: int = 2026
     currency: str = "USD"
+    base_price: Optional[Decimal] = None
+    price_agency_shared: Optional[Decimal] = None
+    price_agency_private: Optional[Decimal] = None
+    price_direct_shared: Optional[Decimal] = None
+    price_direct_private: Optional[Decimal] = None
+    price_web: Optional[Decimal] = None
 
 
 class ServiceUpdate(BaseModel):
     service_name: Optional[str] = None
     service_type: Optional[ServiceType] = None
     description: Optional[str] = None
-    base_price: Optional[Decimal] = None
-    guest_price: Optional[Decimal] = None
+    pricing_code: Optional[str] = None
+    category: Optional[str] = None
+    year: Optional[int] = None
     currency: Optional[str] = None
+    base_price: Optional[Decimal] = None
+    price_agency_shared: Optional[Decimal] = None
+    price_agency_private: Optional[Decimal] = None
+    price_direct_shared: Optional[Decimal] = None
+    price_direct_private: Optional[Decimal] = None
+    price_web: Optional[Decimal] = None
     is_active: Optional[bool] = None
 
 
 class ServiceOut(BaseModel):
     service_id: int
-    provider_id: int
     service_name: str
     service_type: ServiceType
-    description: Optional[str]
-    base_price: Decimal
-    guest_price: Optional[Decimal] = None
+    description: Optional[str] = None
+    pricing_code: Optional[str] = None
+    category: Optional[str] = None
+    year: int = 2026
     currency: str
     is_active: bool
     created_date: datetime
-    provider: Optional[ProviderOut] = None
+    base_price: Optional[Decimal] = None
+    price_agency_shared: Optional[Decimal] = None
+    price_agency_private: Optional[Decimal] = None
+    price_direct_shared: Optional[Decimal] = None
+    price_direct_private: Optional[Decimal] = None
+    price_web: Optional[Decimal] = None
     model_config = {"from_attributes": True}
 
 
 # ── Vouchers ──────────────────────────────────────────────────────────────────
 
 class VoucherCreate(BaseModel):
-    provider_id: int
+    provider_id: Optional[int] = None
     service_id: int
     room_number: str
     guest_name: str
     property_name: str
+    sales_channel: Optional[str] = None
     unit_price: Decimal
     quantity: int = 1
     notes: Optional[str] = None
@@ -127,13 +146,14 @@ class VoucherOut(BaseModel):
     service_id: int
     room_number: str
     guest_name: str
-    guest_photo_url: str
-    qr_code_data: Optional[str]
+    guest_photo_url: Optional[str] = None
+    qr_code_data: Optional[str] = None
     assigned_date: datetime
     service_date: Optional[date] = None
     assigned_by: str
     status: VoucherStatus
     property_name: str
+    sales_channel: Optional[str] = None
     unit_price: Decimal
     quantity: int
     total_amount: Decimal

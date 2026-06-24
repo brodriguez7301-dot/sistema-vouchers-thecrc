@@ -49,12 +49,13 @@ def get_voucher(voucher_id: int, db: Session = Depends(get_db), _=Depends(get_cu
 
 @router.post("/", response_model=schemas.VoucherOut, status_code=201)
 async def create_voucher(
-    provider_id: int = Form(...),
     service_id: int = Form(...),
     room_number: str = Form(...),
     guest_name: str = Form(...),
     property_name: str = Form(...),
     unit_price: float = Form(...),
+    provider_id: Optional[int] = Form(None),
+    sales_channel: Optional[str] = Form(None),
     quantity: int = Form(1),
     notes: Optional[str] = Form(None),
     service_date: Optional[str] = Form(None),
@@ -87,6 +88,7 @@ async def create_voucher(
         room_number=room_number,
         guest_name=guest_name,
         property_name=property_name,
+        sales_channel=sales_channel,
         unit_price=Decimal(str(unit_price)),
         quantity=quantity,
         notes=notes,

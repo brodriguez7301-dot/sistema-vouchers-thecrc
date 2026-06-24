@@ -9,18 +9,30 @@ from api import auth, providers, services, vouchers, voucher_usage, audit, repor
 
 Base.metadata.create_all(bind=engine)
 
-# Add columns introduced after initial deploy
+# Migrations — add columns introduced after initial deploy
+_sql = __import__("sqlalchemy").text
 with engine.connect() as conn:
-    try:
-        conn.execute(__import__("sqlalchemy").text(
-            "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS service_date DATE"
-        ))
-        conn.execute(__import__("sqlalchemy").text(
-            "ALTER TABLE services ADD COLUMN IF NOT EXISTS guest_price NUMERIC(10, 2)"
-        ))
-        conn.commit()
-    except Exception:
-        pass
+    for stmt in [
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS service_date DATE",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS sales_channel VARCHAR(50)",
+        "ALTER TABLE vouchers ALTER COLUMN provider_id DROP NOT NULL",
+        "ALTER TABLE vouchers ALTER COLUMN guest_photo_url DROP NOT NULL",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS pricing_code VARCHAR(20)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS category VARCHAR(50)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2026",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_agency_shared NUMERIC(10,2)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_agency_private NUMERIC(10,2)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_direct_shared NUMERIC(10,2)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_direct_private NUMERIC(10,2)",
+        "ALTER TABLE services ADD COLUMN IF NOT EXISTS price_web NUMERIC(10,2)",
+        "ALTER TABLE services ALTER COLUMN provider_id DROP NOT NULL",
+        "ALTER TABLE services ALTER COLUMN base_price DROP NOT NULL",
+    ]:
+        try:
+            conn.execute(_sql(stmt))
+        except Exception:
+            pass
+    conn.commit()
 
 app = FastAPI(title="Sistema de Vouchers Electrónicos", version="1.0.0")
 
