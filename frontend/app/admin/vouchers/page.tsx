@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import { api } from "@/lib/api";
+import { getStoredUser } from "@/lib/auth";
 import type { Voucher, Provider, Service } from "@/lib/types";
 import { getServiceChannels, CHANNEL_LABELS } from "@/lib/types";
 
@@ -20,6 +21,9 @@ const EMPTY_FORM = {
 };
 
 export default function VouchersPage() {
+  const currentUser = getStoredUser();
+  const isAdmin = currentUser?.role === "admin";
+
   const [vouchers, setVouchers]     = useState<Voucher[]>([]);
   const [detail, setDetail]         = useState<Voucher | null>(null);
   const [providers, setProviders]   = useState<Provider[]>([]);
@@ -102,9 +106,14 @@ export default function VouchersPage() {
     : services;
 
   return (
-    <AppShell roles={["admin"]}>
+    <AppShell roles={["admin", "concierge"]}>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
-        <h1 className="text-2xl font-bold">Vouchers</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Vouchers</h1>
+          {!isAdmin && currentUser?.name && (
+            <p className="text-sm text-gray-400 mt-0.5">Mis vouchers — {currentUser.name}</p>
+          )}
+        </div>
         <div className="flex gap-3">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
             <option value="">Todos los estados</option>

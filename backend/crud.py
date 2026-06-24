@@ -126,6 +126,7 @@ def get_vouchers(
     property_name: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    assigned_by: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ):
@@ -138,6 +139,8 @@ def get_vouchers(
         q = q.filter(cast(Voucher.assigned_date, Date) >= date_from)
     if date_to:
         q = q.filter(cast(Voucher.assigned_date, Date) <= date_to)
+    if assigned_by:
+        q = q.filter(Voucher.assigned_by == assigned_by)
     return q.order_by(Voucher.voucher_id.desc()).offset(skip).limit(limit).all()
 
 

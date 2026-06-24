@@ -27,9 +27,10 @@ def list_vouchers(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _=Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
-    return crud.get_vouchers(db, status=status, property_name=property_name, date_from=date_from, date_to=date_to, skip=skip, limit=limit)
+    assigned_by = current_user.name if current_user.role == "concierge" else None
+    return crud.get_vouchers(db, status=status, property_name=property_name, date_from=date_from, date_to=date_to, assigned_by=assigned_by, skip=skip, limit=limit)
 
 
 @router.get("/by-consecutive/{consecutive_number}", response_model=schemas.VoucherOut)
@@ -63,7 +64,7 @@ async def create_voucher(
     service_date: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    user=Depends(require_role("admin")),
+    user=Depends(require_role("admin", "concierge")),
 ):
     photo_path = None
     if photo and photo.filename:
