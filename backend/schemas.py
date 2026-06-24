@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime, date
 from decimal import Decimal
-from models import ProviderType, ServiceType, VoucherStatus, UsageStatus, ValidationStatus
+from models import ProviderType, ServiceType, VoucherStatus, UsageStatus, ValidationStatus, AuditStatus
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -162,10 +162,21 @@ class VoucherOut(BaseModel):
     pdf_generated: bool
     pdf_url: Optional[str]
     notes: Optional[str]
+    audit_status: Optional[AuditStatus] = AuditStatus.PENDIENTE
+    invoice_number: Optional[str] = None
+    audit_notes: Optional[str] = None
+    audited_by: Optional[str] = None
+    audited_at: Optional[datetime] = None
     created_date: datetime
     provider: Optional[ProviderOut] = None
     service: Optional[ServiceOut] = None
     model_config = {"from_attributes": True}
+
+
+class VoucherAuditUpdate(BaseModel):
+    audit_status: AuditStatus
+    invoice_number: Optional[str] = None
+    audit_notes: Optional[str] = None
 
 
 # ── Voucher Usage ─────────────────────────────────────────────────────────────

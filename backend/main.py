@@ -28,6 +28,12 @@ with engine.connect() as conn:
         "ALTER TABLE services ALTER COLUMN provider_id DROP NOT NULL",
         "ALTER TABLE services ALTER COLUMN base_price DROP NOT NULL",
         "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS guest_price NUMERIC(10,2)",
+        "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'auditstatus') THEN CREATE TYPE auditstatus AS ENUM ('PENDIENTE','APROBADO','EN_DISPUTA'); END IF; END $$",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audit_status auditstatus DEFAULT 'PENDIENTE'",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS invoice_number VARCHAR(80)",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audit_notes TEXT",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audited_by VARCHAR(100)",
+        "ALTER TABLE vouchers ADD COLUMN IF NOT EXISTS audited_at TIMESTAMP",
     ]:
         try:
             conn.execute(_sql(stmt))

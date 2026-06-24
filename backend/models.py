@@ -41,6 +41,12 @@ class ValidationStatus(str, enum.Enum):
     NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"
 
 
+class AuditStatus(str, enum.Enum):
+    PENDIENTE   = "PENDIENTE"
+    APROBADO    = "APROBADO"
+    EN_DISPUTA  = "EN_DISPUTA"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -120,6 +126,12 @@ class Voucher(Base):
     pdf_generated = Column(Boolean, default=False)
     pdf_url = Column(String(255))
     notes = Column(Text)
+    # Auditoría
+    audit_status = Column(SAEnum(AuditStatus), default=AuditStatus.PENDIENTE, nullable=True)
+    invoice_number = Column(String(80), nullable=True)   # factura del proveedor asociada
+    audit_notes = Column(Text, nullable=True)
+    audited_by = Column(String(100), nullable=True)
+    audited_at = Column(DateTime, nullable=True)
     created_date = Column(DateTime, server_default=func.now())
     updated_date = Column(DateTime, onupdate=func.now())
 

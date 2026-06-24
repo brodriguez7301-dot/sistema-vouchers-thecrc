@@ -54,6 +54,8 @@ export const api = {
     request<import("./types").Voucher>("/api/vouchers/", { method: "POST", body: formData }),
   updateVoucherStatus: (id: number, status: string) =>
     request(`/api/vouchers/${id}/status`, { method: "PUT", body: JSON.stringify({ status }) }),
+  auditVoucher: (id: number, data: { audit_status: string; invoice_number?: string; audit_notes?: string }) =>
+    request<import("./types").Voucher>(`/api/vouchers/${id}/audit`, { method: "PUT", body: JSON.stringify(data) }),
   generatePdf: (id: number) => request(`/api/vouchers/${id}/generate-pdf`, { method: "POST" }),
   downloadPdfUrl: (id: number) => `${API}/api/vouchers/${id}/pdf?token=${getToken()}`,
 

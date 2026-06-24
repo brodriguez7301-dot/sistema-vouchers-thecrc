@@ -108,6 +108,22 @@ def update_status(voucher_id: int, data: schemas.VoucherStatusUpdate, db: Sessio
     return obj
 
 
+@router.put("/{voucher_id}/audit", response_model=schemas.VoucherOut)
+def audit_voucher(voucher_id: int, data: schemas.VoucherAuditUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    from datetime import datetime as dt
+    obj = crud.get_voucher(db, voucher_id)
+    if not obj:
+        raise HTTPException(404, "Voucher not found")
+    obj.audit_status   = data.audit_status
+    obj.invoice_number = data.invoice_number
+    obj.audit_notes    = data.audit_notes
+    obj.audited_by     = user.name
+    obj.audited_at     = dt.utcnow()
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 @router.post("/{voucher_id}/generate-pdf")
 def generate_pdf(voucher_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     path = crud.generate_pdf_for_voucher(db, voucher_id)

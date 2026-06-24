@@ -60,6 +60,19 @@ export function getServiceChannels(s: Service): { key: string; label: string; pr
 }
 
 export type VoucherStatus = "PENDING" | "ISSUED" | "INVOICED" | "PAID" | "CANCELLED";
+export type AuditStatus = "PENDIENTE" | "APROBADO" | "EN_DISPUTA";
+
+export const AUDIT_STATUS_LABELS: Record<AuditStatus, string> = {
+  PENDIENTE:  "Pendiente",
+  APROBADO:   "Aprobado",
+  EN_DISPUTA: "En Disputa",
+};
+
+export const AUDIT_STATUS_COLORS: Record<AuditStatus, string> = {
+  PENDIENTE:  "bg-gray-100 text-gray-600",
+  APROBADO:   "bg-green-100 text-green-700",
+  EN_DISPUTA: "bg-orange-100 text-orange-700",
+};
 
 export interface Voucher {
   voucher_id: number;
@@ -76,13 +89,18 @@ export interface Voucher {
   status: VoucherStatus;
   property_name: string;
   sales_channel?: string;
-  unit_price: number;       // costo del proveedor
-  guest_price?: number | null; // precio cobrado al huésped
+  unit_price: number;
+  guest_price?: number | null;
   quantity: number;
   total_amount: number;
   pdf_generated: boolean;
   pdf_url?: string;
   notes?: string;
+  audit_status?: AuditStatus | null;
+  invoice_number?: string | null;
+  audit_notes?: string | null;
+  audited_by?: string | null;
+  audited_at?: string | null;
   created_date: string;
   provider?: Provider;
   service?: Service;
