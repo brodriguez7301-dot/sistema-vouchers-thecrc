@@ -42,9 +42,9 @@ class ValidationStatus(str, enum.Enum):
 
 
 class AuditStatus(str, enum.Enum):
-    PENDIENTE   = "PENDIENTE"
-    APROBADO    = "APROBADO"
-    EN_DISPUTA  = "EN_DISPUTA"
+    PENDIENTE  = "PENDIENTE"
+    APROBADO   = "APROBADO"
+    EN_DISPUTA = "EN_DISPUTA"
 
 
 class User(Base):
@@ -127,7 +127,7 @@ class Voucher(Base):
     pdf_url = Column(String(255))
     notes = Column(Text)
     # Auditoría
-    audit_status = Column(SAEnum(AuditStatus), default=AuditStatus.PENDIENTE, nullable=True)
+    audit_status = Column(String(20), default="PENDIENTE", nullable=True)
     invoice_number = Column(String(80), nullable=True)   # factura del proveedor asociada
     audit_notes = Column(Text, nullable=True)
     audited_by = Column(String(100), nullable=True)
