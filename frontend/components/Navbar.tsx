@@ -64,25 +64,26 @@ export default function Navbar({ onNavigate }: { onNavigate?: () => void }) {
             {item.label}
           </Link>
         ))}
-      </div>
-      {/* Ayuda — módulo separado */}
-      <div className="px-2 pb-2">
-        <Link
-          href="/admin/ayuda"
-          onClick={onNavigate}
-          className={clsx(
-            "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors border",
-            pathname === "/admin/ayuda"
-              ? "bg-amber-400 text-[#002147] border-amber-300"
-              : "bg-white/10 text-amber-300 border-white/20 hover:bg-amber-400 hover:text-[#002147] hover:border-amber-300"
-          )}
-        >
-          <span className="text-lg">❓</span>
-          <div>
-            <div>Centro de Ayuda</div>
-            <div className="text-[10px] font-normal opacity-70">Guía del sistema</div>
-          </div>
-        </Link>
+
+        {/* Centro de Ayuda — separado visualmente */}
+        <div className="pt-3 mt-3 border-t border-white/10">
+          <Link
+            href="/admin/ayuda"
+            onClick={onNavigate}
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors border",
+              pathname === "/admin/ayuda"
+                ? "bg-amber-400 text-[#002147] border-amber-300"
+                : "bg-white/10 text-amber-300 border-white/20 hover:bg-amber-400 hover:text-[#002147] hover:border-amber-300"
+            )}
+          >
+            <span className="text-lg">❓</span>
+            <div>
+              <div>Centro de Ayuda</div>
+              <div className="text-[10px] font-normal opacity-70">Guía del sistema</div>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {user && (
